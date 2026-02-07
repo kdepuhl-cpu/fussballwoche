@@ -2,7 +2,10 @@
 
 import { useRef } from "react";
 import Link from "next/link";
-import { Match, ALL_MATCHES } from "@/lib/mock/matches";
+import Image from "next/image";
+import { Match, ALL_MATCHES, getCurrentMatchday } from "@/lib/mock/matches";
+import { getLeagueById } from "@/lib/leagues";
+import VoteButtons from "@/components/tippspiel/VoteButtons";
 
 interface LiveTickerProps {
   matches?: Match[];
@@ -24,53 +27,30 @@ function TeamLogo({ name, shortName, color }: { name: string; shortName: string;
   );
 }
 
-// Status Badge
-function StatusBadge({ status, minute }: { status: Match["status"]; minute?: number }) {
-  if (status === "live") {
-    return (
-      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-red-500 text-white">
-        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-        LIVE {minute}&apos;
-      </span>
-    );
-  }
-
-  if (status === "finished") {
-    return (
-      <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
-        Beendet
-      </span>
-    );
-  }
-
-  return null;
-}
-
 // Match Card
 function MatchCard({ match }: { match: Match }) {
-  const isLive = match.status === "live";
   const isUpcoming = match.status === "upcoming";
+  const league = getLeagueById(match.leagueId);
 
   return (
     <Link
       href={`/spiel/${match.id}`}
-      className={`flex-shrink-0 w-[200px] snap-start bg-white dark:bg-gray-800 rounded-xl border transition-all hover:shadow-lg hover:-translate-y-0.5 ${
-        isLive
-          ? "border-red-300 dark:border-red-500/50 shadow-red-100 dark:shadow-red-500/10"
-          : "border-gray-200 dark:border-gray-700"
-      }`}
+      className="flex-shrink-0 w-[200px] snap-start bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 transition-all hover:shadow-lg hover:-translate-y-0.5 relative z-0"
     >
       <div className="p-3">
-        {/* Status */}
+        {/* Liga + Status */}
         <div className="flex items-center justify-between mb-3">
-          {isLive ? (
-            <StatusBadge status="live" minute={match.minute} />
-          ) : isUpcoming ? (
+          <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 truncate">
+            {league?.shortName ?? match.leagueId}
+          </span>
+          {isUpcoming ? (
             <span className="px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
               {match.time}
             </span>
           ) : (
-            <StatusBadge status="finished" />
+            <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-200 text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+              Beendet
+            </span>
           )}
         </div>
 
@@ -86,9 +66,7 @@ function MatchCard({ match }: { match: Match }) {
             <span className="flex-1 text-sm font-medium text-off-black dark:text-white truncate">
               {match.homeTeam.shortName}
             </span>
-            <span className={`text-lg font-bold tabular-nums ${
-              isLive ? "text-red-500" : "text-off-black dark:text-white"
-            }`}>
+            <span className="text-lg font-bold tabular-nums text-off-black dark:text-white">
               {match.homeScore ?? "-"}
             </span>
           </div>
@@ -103,19 +81,24 @@ function MatchCard({ match }: { match: Match }) {
             <span className="flex-1 text-sm font-medium text-off-black dark:text-white truncate">
               {match.awayTeam.shortName}
             </span>
-            <span className={`text-lg font-bold tabular-nums ${
-              isLive ? "text-red-500" : "text-off-black dark:text-white"
-            }`}>
+            <span className="text-lg font-bold tabular-nums text-off-black dark:text-white">
               {match.awayScore ?? "-"}
             </span>
           </div>
         </div>
+
+        {/* Vote Buttons for non-finished matches */}
+        {match.status !== "finished" && (
+          <div className="mt-2">
+            <VoteButtons matchId={match.id} compact />
+          </div>
+        )}
       </div>
     </Link>
   );
 }
 
-export default function LiveTicker({ matches = ALL_MATCHES, title = "Ergebnisse" }: LiveTickerProps) {
+export default function LiveTicker({ matches = ALL_MATCHES, title = "DIAGO Topspiele" }: LiveTickerProps) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -128,29 +111,34 @@ export default function LiveTicker({ matches = ALL_MATCHES, title = "Ergebnisse"
     }
   };
 
-  // Sort: Live first, then upcoming, then finished
+  // Sort: upcoming first, then finished
   const sortedMatches = [...matches].sort((a, b) => {
-    const order = { live: 0, upcoming: 1, finished: 2 };
+    const order = { live: 0, upcoming: 0, finished: 1 };
     return order[a.status] - order[b.status];
   });
 
-  const liveCount = matches.filter((m) => m.status === "live").length;
+  // Dynamic Spieltag from Berlin-Liga
+  const currentMatchday = getCurrentMatchday("berlin-liga");
 
   return (
-    <section className="py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
+    <section className="relative z-0 py-4 bg-gray-50 dark:bg-gray-800/50 border-b border-gray-200 dark:border-gray-700">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2.5">
+            <Image
+              src="/icons/diago_logo_rgb_forest-green_icon.svg"
+              alt=""
+              width={20}
+              height={20}
+              className="w-5 h-5 dark:brightness-150"
+            />
             <h2 className="font-headline text-lg text-off-black dark:text-white">
               {title}
             </h2>
-            {liveCount > 0 && (
-              <span className="inline-flex items-center gap-1.5 px-2 py-1 rounded-full text-xs font-bold bg-red-500 text-white">
-                <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                {liveCount} Live
-              </span>
-            )}
+            <span className="text-xs font-medium text-gray-400 dark:text-gray-500">
+              Spieltag {currentMatchday}
+            </span>
           </div>
 
           {/* Navigation Arrows */}

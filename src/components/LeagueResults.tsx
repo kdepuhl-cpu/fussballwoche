@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Match, getMatchesByLeague, getCurrentMatchday } from "@/lib/mock/matches";
+import VoteButtons from "@/components/tippspiel/VoteButtons";
 
 interface LeagueResultsProps {
   leagueId: string;
@@ -31,20 +32,10 @@ function TeamLogo({ name, shortName, color, size = "sm" }: {
 }
 
 // Status Badge
-function MatchStatusBadge({ status, minute, time }: {
+function MatchStatusBadge({ status, time }: {
   status: Match["status"];
-  minute?: number;
   time: string;
 }) {
-  if (status === "live") {
-    return (
-      <div className="flex items-center gap-1.5">
-        <span className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-        <span className="text-xs font-bold text-red-500">{minute}&apos;</span>
-      </div>
-    );
-  }
-
   if (status === "upcoming") {
     return (
       <span className="text-xs font-medium text-gray-500 dark:text-gray-400">
@@ -62,15 +53,13 @@ function MatchStatusBadge({ status, minute, time }: {
 
 // Single Match Row
 function MatchRow({ match }: { match: Match }) {
-  const isLive = match.status === "live";
   const isFinished = match.status === "finished";
 
   return (
+    <>
     <Link
       href={`/spiel/${match.id}`}
-      className={`flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors ${
-        isLive ? "bg-red-50/50 dark:bg-red-900/10" : ""
-      }`}
+      className="flex items-center gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
     >
       {/* Home Team */}
       <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -90,15 +79,11 @@ function MatchRow({ match }: { match: Match }) {
 
       {/* Score */}
       <div className="flex items-center gap-2 px-3">
-        <span className={`text-lg font-bold min-w-[24px] text-center ${
-          isLive ? "text-red-500" : "text-off-black dark:text-white"
-        }`}>
+        <span className="text-lg font-bold min-w-[24px] text-center text-off-black dark:text-white">
           {match.homeScore ?? "-"}
         </span>
         <span className="text-gray-400">:</span>
-        <span className={`text-lg font-bold min-w-[24px] text-center ${
-          isLive ? "text-red-500" : "text-off-black dark:text-white"
-        }`}>
+        <span className="text-lg font-bold min-w-[24px] text-center text-off-black dark:text-white">
           {match.awayScore ?? "-"}
         </span>
       </div>
@@ -123,11 +108,16 @@ function MatchRow({ match }: { match: Match }) {
       <div className="w-16 text-right">
         <MatchStatusBadge
           status={match.status}
-          minute={match.minute}
           time={match.time}
         />
       </div>
     </Link>
+    {match.status === "upcoming" && (
+      <div className="px-4 pb-3 -mt-1">
+        <VoteButtons matchId={match.id} compact />
+      </div>
+    )}
+    </>
   );
 }
 
@@ -189,12 +179,6 @@ export default function LeagueResults({ leagueId, initialMatchday }: LeagueResul
           <h2 className="font-headline text-lg text-off-black dark:text-white">
             Spieltag {matchday}
           </h2>
-          {matches.some((m) => m.status === "live") && (
-            <span className="inline-flex items-center gap-1 text-xs text-red-500 font-medium mt-0.5">
-              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse" />
-              Live
-            </span>
-          )}
         </div>
 
         <button

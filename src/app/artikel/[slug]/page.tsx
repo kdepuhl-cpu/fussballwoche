@@ -10,6 +10,8 @@ import ShareButton from "@/components/ui/ShareButton";
 import BookmarkButton from "@/components/ui/BookmarkButton";
 import { artikel, getArtikelBySlug, formatDate } from "@/lib/data";
 import { KATEGORIE_LABELS } from "@/lib/types";
+import { calculateReadingTime } from "@/lib/utils";
+import ReadingTracker from "@/components/artikel/ReadingTracker";
 
 function CommentIcon() {
   return (
@@ -17,10 +19,6 @@ function CommentIcon() {
       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
     </svg>
   );
-}
-
-function calculateReadingTime(text: string): number {
-  return Math.max(Math.ceil(text.length / 1000), 1);
 }
 
 const ARTICLE_TEXT = `Der Sieg war mehr als verdient. Von Beginn an zeigte die Mannschaft, dass sie es ernst meinte mit dem Angriff auf die Tabellenspitze. Bereits in der fünften Minute setzte der Mittelfeldspieler das erste Ausrufezeichen, als sein Schuss nur knapp am Pfosten vorbeiging. Die Fans auf den Rängen spürten sofort: Heute würde etwas Besonderes passieren. Die Defensive stand sicher, das Mittelfeld kontrollierte das Spiel mit beeindruckender Souveränität. Wir haben genau das umgesetzt, was wir uns vorgenommen hatten, erklärte der Trainer nach dem Spiel. Die Jungs haben von der ersten bis zur letzten Minute gezeigt, dass sie bereit sind für die großen Aufgaben. Das 1:0 fiel dann in der 34. Minute – ein sehenswert herausgespielter Treffer über mehrere Stationen. Der Stürmer vollendete nach einer butterweichen Flanke von der rechten Seite per Kopf. Zur Halbzeit führte das Heimteam verdient. In der 78. Minute dann die Entscheidung: Ein Konter wie aus dem Lehrbuch, abgeschlossen vom eingewechselten Youngster. Die Schlussphase wurde dann noch einmal hitzig. Mit diesem Sieg schiebt sich das Team auf Platz drei der Tabelle vor.`;
@@ -49,6 +47,7 @@ export default async function ArtikelPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-off-white dark:bg-gray-900">
       <MarkAsReadOnView slug={slug} />
+      <ReadingTracker articleSlug={slug} />
 
       <div className="sticky top-0 z-50">
         <Header />

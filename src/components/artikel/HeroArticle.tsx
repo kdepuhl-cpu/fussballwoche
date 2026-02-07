@@ -1,5 +1,6 @@
 import { Artikel, KATEGORIE_LABELS } from "@/lib/types";
 import { formatDate, getLigaById } from "@/lib/data";
+import { calculateReadingTime } from "@/lib/utils";
 
 interface HeroArticleProps {
   article: Artikel;
@@ -48,11 +49,9 @@ export default function HeroArticle({ article }: HeroArticleProps) {
           <span className="text-off-black/40 text-xs">
             {formatDate(article.datum)}
           </span>
-          {article.lesedauer && (
-            <span className="text-off-black/40 text-xs">
-              {article.lesedauer} Min.
-            </span>
-          )}
+          <span className="text-off-black/40 text-xs">
+            {article.lesedauer ?? calculateReadingTime(article.inhalt ?? article.teaser)} Min.
+          </span>
         </div>
       </div>
     </article>

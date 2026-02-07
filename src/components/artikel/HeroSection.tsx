@@ -7,6 +7,7 @@ import { useReadArticles } from "@/hooks/useReadArticles";
 import NewBadge from "@/components/ui/NewBadge";
 import FavoritesBadge from "@/components/user/FavoritesBadge";
 import { KATEGORIE_LABELS } from "@/lib/types";
+import { calculateReadingTime } from "@/lib/utils";
 
 interface HeroSectionProps {
   hero: Artikel;
@@ -87,7 +88,7 @@ export default function HeroSection({ hero, sidebar, sectionTitle, isLast = fals
             {/* Meta */}
             <div className="flex items-center gap-3 mt-3 text-sm text-gray-500 dark:text-gray-400">
               {hero.autor && <span className="font-medium">{hero.autor.name}</span>}
-              {hero.lesedauer && <span>{hero.lesedauer} Min.</span>}
+              <span>{hero.lesedauer ?? calculateReadingTime(hero.inhalt ?? hero.teaser)} Min.</span>
               <CommentIcon />
             </div>
           </Link>

@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { useUser } from "@/lib/user/auth";
+import { getReaderLevel } from "@/lib/api/profile";
 
 export default function UserMenu() {
   const { user, profile, signOut } = useUser();
@@ -39,7 +40,28 @@ export default function UserMenu() {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-50">
+        <div className="absolute right-0 top-full mt-2 w-52 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg py-1 z-50">
+          {/* Reader Score */}
+          {profile && (
+            <div className="px-4 py-2.5 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between text-xs text-gray-500 dark:text-gray-400 mb-1">
+                <span>{getReaderLevel(profile.reader_points ?? 0).name}</span>
+                <span className="font-semibold text-forest-green tabular-nums">{profile.reader_points ?? 0} Pkt.</span>
+              </div>
+              <div className="w-full h-1.5 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-forest-green rounded-full transition-all"
+                  style={{
+                    width: `${Math.min(
+                      ((profile.reader_points ?? 0) - getReaderLevel(profile.reader_points ?? 0).min) /
+                      (getReaderLevel(profile.reader_points ?? 0).max - getReaderLevel(profile.reader_points ?? 0).min) * 100,
+                      100
+                    )}%`,
+                  }}
+                />
+              </div>
+            </div>
+          )}
           <Link
             href="/profil"
             onClick={() => setOpen(false)}

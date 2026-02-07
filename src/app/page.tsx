@@ -7,6 +7,7 @@ import MostPopular from "@/components/artikel/MostPopular";
 import LiveTicker from "@/components/LiveTicker";
 import VideoReels from "@/components/VideoReels";
 import FavoritesSection from "@/components/user/FavoritesSection";
+import JobHighlights from "@/components/jobs/JobHighlights";
 import { artikel } from "@/lib/data";
 
 export default function Home() {
@@ -73,6 +74,9 @@ export default function Home() {
             sidebar={dritteLigaArtikel.slice(1, 5)}
           />
         )}
+
+        {/* Jobs */}
+        <JobHighlights />
 
         {/* Regionalliga */}
         {regionalArtikel.length > 0 && (

@@ -1,6 +1,6 @@
 // Liga-Datenstruktur für DIAGO
 
-export type LeagueCategory = "herren" | "frauen" | "pokal";
+export type LeagueCategory = "herren" | "frauen" | "pokal" | "jugend";
 
 export interface Staffel {
   id: string;
@@ -26,7 +26,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "bundesliga",
     name: "Bundesliga",
-    shortName: "BL",
+    shortName: "Bundesliga",
     slug: "bundesliga",
     category: "herren",
     tier: 1,
@@ -35,7 +35,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "2-bundesliga",
     name: "2. Bundesliga",
-    shortName: "2. BL",
+    shortName: "2. Bundesliga",
     slug: "2-bundesliga",
     category: "herren",
     tier: 2,
@@ -53,7 +53,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "regionalliga-nordost",
     name: "Regionalliga Nordost",
-    shortName: "RL NO",
+    shortName: "Regionalliga NO",
     slug: "regionalliga-nordost",
     category: "herren",
     tier: 4,
@@ -80,7 +80,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "berlin-liga",
     name: "Berlin-Liga",
-    shortName: "BL",
+    shortName: "Berlin-Liga",
     slug: "berlin-liga",
     category: "herren",
     tier: 6,
@@ -89,7 +89,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "landesliga",
     name: "Landesliga Berlin",
-    shortName: "LL",
+    shortName: "Landesliga",
     slug: "landesliga",
     category: "herren",
     tier: 7,
@@ -102,7 +102,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "bezirksliga",
     name: "Bezirksliga Berlin",
-    shortName: "BZL",
+    shortName: "Bezirksliga",
     slug: "bezirksliga",
     category: "herren",
     tier: 8,
@@ -176,7 +176,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "frauen-bundesliga",
     name: "Frauen-Bundesliga",
-    shortName: "F-BL",
+    shortName: "Frauen-BL",
     slug: "frauen-bundesliga",
     category: "frauen",
     tier: 1,
@@ -185,7 +185,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "2-frauen-bundesliga",
     name: "2. Frauen-Bundesliga",
-    shortName: "2. F-BL",
+    shortName: "2. Frauen-BL",
     slug: "2-frauen-bundesliga",
     category: "frauen",
     tier: 2,
@@ -194,7 +194,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "frauen-regionalliga-nordost",
     name: "Frauen-Regionalliga Nordost",
-    shortName: "F-RL NO",
+    shortName: "Frauen-RL NO",
     slug: "frauen-regionalliga-nordost",
     category: "frauen",
     tier: 3,
@@ -203,7 +203,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "frauen-berlin-liga",
     name: "Frauen Berlin-Liga",
-    shortName: "F-BL",
+    shortName: "Frauen Berlin-Liga",
     slug: "frauen-berlin-liga",
     category: "frauen",
     tier: 4,
@@ -212,7 +212,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "frauen-landesliga",
     name: "Frauen-Landesliga Berlin",
-    shortName: "F-LL",
+    shortName: "Frauen-LL",
     slug: "frauen-landesliga",
     category: "frauen",
     tier: 5,
@@ -225,7 +225,7 @@ export const ALL_LEAGUES: League[] = [
   {
     id: "frauen-bezirksliga",
     name: "Frauen-Bezirksliga Berlin",
-    shortName: "F-BZL",
+    shortName: "Frauen-BZL",
     slug: "frauen-bezirksliga",
     category: "frauen",
     tier: 6,
@@ -272,6 +272,74 @@ export const ALL_LEAGUES: League[] = [
     category: "pokal",
     tier: 3,
     region: "berlin",
+  },
+
+  // === JUGEND ===
+  {
+    id: "a-jugend-verbandsliga",
+    name: "A-Jugend Verbandsliga",
+    shortName: "A-Jgd VL",
+    slug: "a-jugend-verbandsliga",
+    category: "jugend",
+    tier: 1,
+    region: "berlin",
+  },
+  {
+    id: "a-jugend-landesliga",
+    name: "A-Jugend Landesliga",
+    shortName: "A-Jgd LL",
+    slug: "a-jugend-landesliga",
+    category: "jugend",
+    tier: 2,
+    region: "berlin",
+    staffeln: [
+      { id: "a-jugend-landesliga-1", name: "Staffel 1", slug: "a-jugend-landesliga-staffel-1" },
+      { id: "a-jugend-landesliga-2", name: "Staffel 2", slug: "a-jugend-landesliga-staffel-2" },
+    ],
+  },
+  {
+    id: "b-jugend-verbandsliga",
+    name: "B-Jugend Verbandsliga",
+    shortName: "B-Jgd VL",
+    slug: "b-jugend-verbandsliga",
+    category: "jugend",
+    tier: 1,
+    region: "berlin",
+  },
+  {
+    id: "b-jugend-landesliga",
+    name: "B-Jugend Landesliga",
+    shortName: "B-Jgd LL",
+    slug: "b-jugend-landesliga",
+    category: "jugend",
+    tier: 2,
+    region: "berlin",
+    staffeln: [
+      { id: "b-jugend-landesliga-1", name: "Staffel 1", slug: "b-jugend-landesliga-staffel-1" },
+      { id: "b-jugend-landesliga-2", name: "Staffel 2", slug: "b-jugend-landesliga-staffel-2" },
+    ],
+  },
+  {
+    id: "c-jugend-verbandsliga",
+    name: "C-Jugend Verbandsliga",
+    shortName: "C-Jgd VL",
+    slug: "c-jugend-verbandsliga",
+    category: "jugend",
+    tier: 1,
+    region: "berlin",
+  },
+  {
+    id: "c-jugend-landesliga",
+    name: "C-Jugend Landesliga",
+    shortName: "C-Jgd LL",
+    slug: "c-jugend-landesliga",
+    category: "jugend",
+    tier: 2,
+    region: "berlin",
+    staffeln: [
+      { id: "c-jugend-landesliga-1", name: "Staffel 1", slug: "c-jugend-landesliga-staffel-1" },
+      { id: "c-jugend-landesliga-2", name: "Staffel 2", slug: "c-jugend-landesliga-staffel-2" },
+    ],
   },
 ];
 
@@ -373,6 +441,7 @@ export function getCategoryLabel(category: LeagueCategory): string {
     herren: "Herren",
     frauen: "Frauen",
     pokal: "Pokal",
+    jugend: "Jugend",
   };
   return labels[category];
 }
