@@ -69,8 +69,37 @@ export default function Footer() {
             </nav>
           </div>
 
-          {/* Column 3: Social Links */}
+          {/* Column 3: Jobs + Social Links */}
           <div>
+            <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
+              Jobs &amp; Community
+            </h4>
+            <nav className="space-y-2 mb-6">
+              <Link
+                href="/jobs"
+                className="block text-sm hover:text-white transition-colors"
+              >
+                Alle Jobs
+              </Link>
+              <Link
+                href="/jobs/kategorie/trainer"
+                className="block text-sm hover:text-white transition-colors"
+              >
+                Trainerstellen
+              </Link>
+              <Link
+                href="/jobs/kategorie/spieler"
+                className="block text-sm hover:text-white transition-colors"
+              >
+                Spieler gesucht
+              </Link>
+              <Link
+                href="/jobs/kategorie/ehrenamt"
+                className="block text-sm hover:text-white transition-colors"
+              >
+                Ehrenamt
+              </Link>
+            </nav>
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
               Folge uns
             </h4>
