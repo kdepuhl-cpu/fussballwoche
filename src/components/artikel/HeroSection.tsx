@@ -5,6 +5,7 @@ import Image from "next/image";
 import { Artikel } from "@/lib/types";
 import { useReadArticles } from "@/hooks/useReadArticles";
 import NewBadge from "@/components/ui/NewBadge";
+import FavoritesBadge from "@/components/user/FavoritesBadge";
 
 interface HeroSectionProps {
   hero: Artikel;
@@ -75,6 +76,7 @@ export default function HeroSection({ hero, sidebar, sectionTitle, isLast = fals
             {/* Headline */}
             <div className="flex items-center gap-2 mb-1">
               <NewBadge date={hero.datum} />
+              <FavoritesBadge ligaId={hero.ligaId} />
             </div>
             <h3 className={`font-headline text-2xl lg:text-3xl group-hover:text-forest-green transition-colors flex items-center gap-2 ${
               heroIsRead ? "text-gray-500 dark:text-gray-400" : "text-off-black dark:text-white"
@@ -121,8 +123,11 @@ export default function HeroSection({ hero, sidebar, sectionTitle, isLast = fals
 
                   {/* Content */}
                   <div className="flex-1 min-w-0">
-                    {/* New Badge */}
-                    <NewBadge date={artikel.datum} className="mb-1" />
+                    {/* Badges */}
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <NewBadge date={artikel.datum} />
+                      <FavoritesBadge ligaId={artikel.ligaId} />
+                    </div>
                     {/* Headline */}
                     <h4 className={`text-base font-semibold leading-snug group-hover:text-forest-green transition-colors flex items-center gap-1.5 ${
                       artikelIsRead ? "text-gray-500 dark:text-gray-400" : "text-off-black dark:text-white"

@@ -5,6 +5,8 @@ import Link from "next/link";
 import Image from "next/image";
 import { useTheme } from "@/hooks/useTheme";
 import SearchOverlay from "@/components/ui/SearchOverlay";
+import { useUser } from "@/lib/user/auth";
+import UserMenu from "@/components/user/UserMenu";
 import {
   getLeaguesByCategory,
   hasStaffeln,
@@ -35,6 +37,7 @@ export default function Header() {
   const [mobileExpandedCategory, setMobileExpandedCategory] = useState<LeagueCategory | null>(null);
   const [mobileExpandedLeague, setMobileExpandedLeague] = useState<string | null>(null);
   const { theme, toggleTheme, mounted } = useTheme();
+  const { user, loading: authLoading, signOut } = useUser();
   const dropdownRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -281,6 +284,20 @@ export default function Header() {
                   )}
                 </button>
               )}
+
+              {/* User Auth */}
+              {!authLoading && (
+                user ? (
+                  <UserMenu />
+                ) : (
+                  <Link
+                    href="/login"
+                    className="hidden md:block ml-1 px-3 py-1.5 text-sm font-medium text-gray-300 hover:text-white transition-colors"
+                  >
+                    Anmelden
+                  </Link>
+                )
+              )}
             </div>
           </div>
         </div>
@@ -458,6 +475,56 @@ export default function Header() {
                   </svg>
                   Suchen
                 </button>
+
+                {/* User Auth in Mobile */}
+                {!authLoading && (
+                  user ? (
+                    <>
+                      <div className="my-3 border-t border-gray-800" />
+                      <div className="px-4 py-2 flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-forest-green flex items-center justify-center text-white text-xs font-bold">
+                          {((user.user_metadata?.display_name as string) ?? user.email ?? "?")[0].toUpperCase()}
+                        </div>
+                        <span className="text-sm text-gray-300 truncate">
+                          {(user.user_metadata?.display_name as string) ?? user.email}
+                        </span>
+                      </div>
+                      <Link
+                        href="/profil"
+                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                        Mein Profil
+                      </Link>
+                      <button
+                        onClick={async () => {
+                          setMenuOpen(false);
+                          await signOut();
+                        }}
+                        className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors w-full"
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        Abmelden
+                      </button>
+                    </>
+                  ) : (
+                    <Link
+                      href="/login"
+                      className="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/10 hover:text-white rounded-lg transition-colors"
+                      onClick={() => setMenuOpen(false)}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" />
+                      </svg>
+                      Anmelden
+                    </Link>
+                  )
+                )}
               </nav>
             </div>
           </div>

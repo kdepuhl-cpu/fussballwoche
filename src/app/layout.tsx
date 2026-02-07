@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import ScrollToTop from "@/components/ui/ScrollToTop";
-import { ToastProvider } from "@/components/ui/Toast";
 import PWAInstallPrompt from "@/components/ui/PWAInstallPrompt";
+import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
   title: "DIAGO - Berliner Amateurfußball News",
@@ -28,11 +28,11 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/diago_logo_rgb_forest-green_icon.svg" />
       </head>
       <body className="antialiased">
-        <ToastProvider>
+        <Providers>
           {children}
           <ScrollToTop />
           <PWAInstallPrompt />
-        </ToastProvider>
+        </Providers>
       </body>
     </html>
   );

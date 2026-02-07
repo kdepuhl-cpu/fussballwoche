@@ -1,9 +1,12 @@
+"use client";
+
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/navigation/Footer";
 import HeroSection from "@/components/artikel/HeroSection";
 import MostPopular from "@/components/artikel/MostPopular";
 import LiveTicker from "@/components/LiveTicker";
 import VideoReels from "@/components/VideoReels";
+import FavoritesSection from "@/components/user/FavoritesSection";
 import { artikel } from "@/lib/data";
 
 export default function Home() {
@@ -34,6 +37,9 @@ export default function Home() {
       <LiveTicker />
 
       <main className="max-w-7xl mx-auto px-4 pt-8 pb-12">
+        {/* Personalisierte Sektion für eingeloggte User */}
+        <FavoritesSection artikel={artikel} />
+
         {/* Bundesliga Section */}
         {bundesligaArtikel.length > 0 && (
           <HeroSection
