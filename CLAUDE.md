@@ -13,16 +13,62 @@ DIAGO ist eine News-PWA für Berliner Amateurfußball-Fans. Inspiriert von der "
 - **Framework:** Next.js 14+ (App Router)
 - **Styling:** Tailwind CSS
 - **Sprache:** TypeScript
+- **Backend:** Supabase (PostgreSQL, Auth, RLS, RPC)
 - **PWA:** Manifest + Install Prompt
-- **Deployment:** Netlify (Static Export)
+- **Deployment:** Netlify (Static Export, `output: "export"`)
 
 ---
 
 ## Deployment
 - **GitHub:** `kdepuhl-cpu/diago`
-- **Netlify:** https://diagonista.netlify.app/ (aktuell disabled)
-- **Branch `main`:** Produktions-Code
-- **Branch `feature/liga-navigation`:** Neue Features (Liga-System, LiveTicker, VideoReels)
+- **Netlify:** https://diagonista.netlify.app/
+- **Branch `main`:** Produktions-Code, Auto-Deploy bei Push
+- **Netlify CLI:** Projekt gelinkt (`netlify link`)
+- **Environment Variables** (Netlify): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_ADMIN_EMAILS`
+- **Build:** `npm run build` → Publish-Dir: `out`
+
+### Wichtige Constraints
+- `output: "export"` → alle dynamischen Seiten brauchen `generateStaticParams()`
+- `"use client"` + `generateStaticParams()` geht NICHT — Server Component nötig
+- Root `layout.tsx` darf NICHT `"use client"` sein (Metadata + Error Boundaries)
+- Supabase-Client wird nur erstellt wenn env vars vorhanden (Build-Schutz)
+
+---
+
+## Supabase Backend
+
+### Tabellen
+| Tabelle | Zweck |
+|---------|-------|
+| `profiles` | User-Profile (display_name, favorite_club_ids, bezirk, reader_points, articles_read) |
+| `bookmarks` | Gespeicherte Artikel (user_id + article_slug) |
+| `match_votes` | Tippspiel-Votes (user_id, match_id, vote: 1/X/2) |
+| `match_results` | Admin-Ergebnisse (match_id, result: 1/X/2) |
+
+### RPC-Funktionen
+- `record_article_read(p_article_slug)` — Artikel als gelesen markieren, +10 Punkte, Duplikat-Schutz
+- `get_vote_stats(p_match_id)` — Aggregierte Vote-Prozentsätze pro Match
+
+### RLS-Policies
+- Profiles: User sieht/editiert nur eigenes Profil
+- Bookmarks: User sieht/erstellt/löscht nur eigene
+- match_votes: User sieht eigene, kann erstellen (kein Update/Delete)
+- match_results: Alle lesen, nur Admin (`kdepuhl@gmail.com`) kann INSERT/UPDATE
+
+### SQL-Migrationen
+```
+supabase/migrations/
+├── 001_initial.sql
+├── 002_admin_policies.sql
+├── 003_user_profiles.sql
+├── 004_tippspiel.sql (match_votes + match_results + RPC)
+└── 006_reader_score.sql (reader_points + articles_read + RPC)
+```
+
+### API-Layer (`src/lib/api/`)
+- `profile.ts` — Profile CRUD, Bookmarks CRUD, recordArticleRead, getReaderLevel, syncLocalBookmarks
+- `votes.ts` — submitVote, getUserVote(s), getVoteStats, getScoreboard, setMatchResult
+- `admin.ts` — Admin-Queries
 
 ---
 
@@ -31,7 +77,7 @@ DIAGO ist eine News-PWA für Berliner Amateurfußball-Fans. Inspiriert von der "
 ### Farben
 | Name | Hex | Verwendung |
 |------|-----|------------|
-| Forest Green | `#044110` | Primary, aktive Tabs, Buttons |
+| Forest Green | `#044110` | Primary, aktive Tabs, Buttons, Vote-Akzent |
 | Electric Orange | `#FC401D` | Akzente, Dachzeilen, CTAs, Progress Bar |
 | Mint Green | `#D0FDDA` | Subtle Backgrounds, Hover |
 | Off White | `#FAFAFA` | Page Background (Light Mode) |
@@ -49,69 +95,90 @@ DIAGO ist eine News-PWA für Berliner Amateurfußball-Fans. Inspiriert von der "
 | Subheadings | Manrope Bold | Google Fonts |
 | Body | Manrope Regular | Google Fonts |
 
-### Assets
-```
-public/
-├── fonts/
-│   ├── Manuka-Bold.otf
-│   └── manuka-bold.woff2
-├── icons/
-│   ├── diago_logo_rgb_white.svg (Header)
-│   ├── diago_logo_rgb_forest-green.svg
-│   ├── diago_logo_rgb_forest-green_icon.svg
-│   └── ...
-└── manifest.json (PWA)
-```
-
 ---
 
 ## Projektstruktur
 ```
 src/
 ├── app/
-│   ├── layout.tsx (ToastProvider, PWAInstallPrompt)
-│   ├── page.tsx (Startseite mit LiveTicker, VideoReels)
+│   ├── layout.tsx (Providers: ToastProvider + UserAuthProvider)
+│   ├── page.tsx (Startseite: LiveTicker, Hero, Jobs, VideoReels)
+│   ├── artikel/[slug]/page.tsx (Artikel-Detail + ReadingTracker)
 │   ├── liga/[slug]/page.tsx (Liga-Seiten mit Tabelle)
-│   ├── artikel/[slug]/page.tsx (Artikel-Detail)
+│   ├── spiel/[id]/page.tsx (Match-Detail + VoteButtons)
+│   ├── tippspiel/page.tsx (Scoreboard / Rangliste)
+│   ├── jobs/page.tsx (Job-Übersicht)
+│   ├── jobs/[id]/page.tsx (Job-Detail)
+│   ├── jobs/kategorie/[slug]/page.tsx (Jobs nach Kategorie)
+│   ├── login/page.tsx (Auth)
+│   ├── onboarding/page.tsx (3-Step: Name, Vereine, Bezirk)
+│   ├── profil/page.tsx (User-Profil)
 │   ├── gespeichert/page.tsx (Bookmarks)
-│   ├── offline/page.tsx (PWA Offline)
-│   └── tag/[slug]/page.tsx (Tag-Seiten)
+│   ├── admin/page.tsx (Dashboard)
+│   ├── admin/articles/... (Artikel CRUD)
+│   ├── admin/clubs/... (Vereine CRUD)
+│   ├── admin/jobs/... (Jobs CRUD)
+│   ├── admin/votes/page.tsx (Tippspiel-Ergebnisse eintragen)
+│   ├── admin/login/page.tsx (Admin-Auth)
+│   ├── tag/[slug]/page.tsx (Tag-Seiten)
+│   └── offline/page.tsx (PWA Offline)
 ├── components/
 │   ├── navigation/
-│   │   ├── Header.tsx (Herren|Frauen|Pokal Dropdowns)
+│   │   ├── Header.tsx (Herren|Frauen|Pokal|Jugend + Jobs, Tippspiel)
 │   │   └── Footer.tsx (Kurzpass Newsletter)
 │   ├── artikel/
 │   │   ├── HeroSection.tsx (Hero + Sidebar Grid)
+│   │   ├── HeroArticle.tsx
 │   │   ├── MostPopular.tsx (Meistgelesen)
 │   │   ├── ReadingProgressBar.tsx
-│   │   └── MarkAsReadButton.tsx
-│   ├── LiveTicker.tsx (Ergebnis-Widget)
-│   ├── LeagueResults.tsx (Spieltag-Ansicht)
+│   │   ├── ReadingTracker.tsx (30s Timer → Reader Score)
+│   │   ├── MarkAsReadButton.tsx
+│   │   └── MarkAsReadOnView.tsx
+│   ├── tippspiel/
+│   │   └── VoteButtons.tsx (Segmented 1|X|2 Pill)
+│   ├── jobs/
+│   │   └── JobHighlights.tsx (Horizontal Cards für Startseite)
+│   ├── user/
+│   │   └── UserMenu.tsx (Avatar-Dropdown + Reader Score)
+│   ├── admin/
+│   │   ├── Sidebar.tsx
+│   │   └── AdminGuard.tsx
+│   ├── LiveTicker.tsx (DIAGO Topspiele Widget)
+│   ├── LeagueResults.tsx (Spieltag-Ansicht + VoteButtons)
 │   ├── VideoReels.tsx (Video-Karussell)
 │   ├── VideoModal.tsx (Video-Player Modal)
+│   ├── Providers.tsx (ToastProvider + UserAuthProvider)
 │   └── ui/
 │       ├── Toast.tsx (ToastProvider)
 │       ├── SearchOverlay.tsx (Cmd+K)
-│       ├── BookmarkButton.tsx
+│       ├── BookmarkButton.tsx (Supabase-first + localStorage)
 │       ├── ShareButton.tsx
 │       ├── NewBadge.tsx ("Neu" für <24h)
+│       ├── ReadBadge.tsx (Gelesen-Haken)
+│       ├── FavoritesBadge.tsx ("Dein Verein")
 │       ├── PWAInstallPrompt.tsx
 │       ├── ScrollToTop.tsx
-│       ├── ReadingStats.tsx
-│       ├── CategoryFilter.tsx
 │       └── Skeleton.tsx
 ├── hooks/
 │   ├── useReadArticles.ts (localStorage)
-│   ├── useBookmarks.ts (localStorage)
+│   ├── useBookmarks.ts (Supabase-first + localStorage-Fallback)
 │   ├── useTheme.ts (Dark Mode)
 │   └── useKeyboardNavigation.ts (j/k)
 ├── lib/
+│   ├── supabase.ts (Client-Init mit Build-Schutz)
 │   ├── types.ts (Artikel, Liga, etc.)
 │   ├── data.ts (Artikel-Daten)
-│   ├── leagues.ts (25+ Ligen mit Staffeln)
-│   ├── gamification.ts (Punkte-System)
+│   ├── leagues.ts (30+ Ligen inkl. Jugend)
+│   ├── jobs.ts (Job-Daten)
+│   ├── utils.ts (calculateReadingTime)
+│   ├── user/
+│   │   └── auth.tsx (UserAuthProvider Context)
+│   ├── api/
+│   │   ├── profile.ts (Profile, Bookmarks, Reader Score)
+│   │   ├── votes.ts (Tippspiel CRUD + Scoreboard)
+│   │   └── admin.ts (Admin-Queries)
 │   └── mock/
-│       ├── matches.ts (Ergebnis-Daten)
+│       ├── matches.ts (Ergebnis-Daten, 12 Berliner Vereine)
 │       └── videos.ts (Video-Daten)
 └── styles/
     └── globals.css
@@ -121,25 +188,21 @@ src/
 
 ## Ligen-System (`lib/leagues.ts`)
 
-**25+ Ligen, 80+ Slugs** (inkl. Staffeln)
+**30+ Ligen, 80+ Slugs** (inkl. Staffeln + Jugend)
 
 ### Kategorien
-- **Herren (Tier 1-11):** Bundesliga → 2. BL → 3. Liga → RL Nordost → OL Nord/Süd → Berlin-Liga → Landesliga → Bezirksliga → Kreisliga A/B/C
-- **Frauen (Tier 1-6):** Frauen-BL → 2. F-BL → F-RL Nordost → F-Berlin-Liga → F-Landesliga → F-Bezirksliga
+- **Herren (Tier 1-11):** Bundesliga → 2. Bundesliga → 3. Liga → Regionalliga NO → Berlin-Liga → Landesliga → Bezirksliga → Kreisliga A/B/C
+- **Frauen (Tier 1-6):** Frauen-BL → 2. Frauen-BL → Frauen-RL NO → Frauen Berlin-Liga → Frauen-LL → Frauen-BZL
 - **Pokal:** DFB-Pokal, DFB-Pokal Frauen, Berliner Pilsner-Pokal, Polytan-Pokal
+- **Jugend:** A-Jugend Verbandsliga, A-Jugend Landesliga, B-Jugend Verbandsliga, B-Jugend Landesliga, C-Jugend Verbandsliga, C-Jugend Landesliga
 
-### Staffeln
-Ligen mit mehreren Staffeln (Landesliga, Bezirksliga, Kreisliga) haben Tabs zur Auswahl.
-
-### Liga-Seiten (`/liga/[slug]`)
-- Breadcrumbs Navigation
-- Tier-Badge (1.-11. Liga), Region-Badge, Kategorie-Badge
-- Staffel-Tabs bei Ligen mit Staffeln
-- Tabelle + LeagueResults Widget
+### Liga-Naming
+Eindeutige shortNames: "Berlin-Liga" (nicht "BL"), "Frauen-BL" (nicht "F-BL"), Jugend mit Altersklasse
 
 ### Helper-Funktionen
 - `getLeaguesByCategory(category)` – Ligen nach Kategorie
 - `getLeagueBySlug(slug)` – Liga per Slug finden
+- `getLeagueById(id)` – Liga per ID finden
 - `getStaffelBySlug(slug)` – Staffel per Slug finden
 - `getAllLeagueSlugs()` – Alle Slugs für Static Params
 
@@ -147,84 +210,95 @@ Ligen mit mehreren Staffeln (Landesliga, Bezirksliga, Kreisliga) haben Tabs zur 
 
 ## Features
 
-### Implementiert ✅
+### Phase 1 — Core (done) ✅
 
-**Core:**
-- [x] Startseite mit Hero + Sidebar Layout
-- [x] Artikel-Detailseite (Athletic-Style)
-- [x] Reading Progress Bar
+**Content & Navigation:**
+- [x] Startseite mit Hero + Sidebar Layout (Athletic-Style)
+- [x] Artikel-Detailseite mit Reading Progress Bar
 - [x] Liga-Seiten mit Tabelle & Spielplan
-- [x] Liga-Navigation (Herren|Frauen|Pokal Dropdowns)
+- [x] Liga-Navigation (Herren|Frauen|Pokal|Jugend Dropdowns)
+- [x] DIAGO Topspiele Widget (dynamischer Spieltag + Logo)
+- [x] Video-Reels Karussell (9:16) + Video-Modal
+- [x] Tag-Seiten, Suche (Cmd+K), Meistgelesen-Sektion
 
-**Engagement:**
-- [x] Gelesen-Tracking (localStorage)
-- [x] Gelesen-Badge (Haken nach Titel)
-- [x] Gamification (Punkte & Level)
-- [x] Meistgelesen-Sektion
-- [x] Neu-Badge (<24h Artikel)
+**Jobs:**
+- [x] Job-Listings für Berliner Fußball (Trainer, Spieler, Ehrenamt)
+- [x] Job-Detail-Seiten + Kategorie-Filter
+- [x] Job-Highlights auf Startseite (horizontale Cards)
 
-**User Features:**
+**PWA & UI:**
+- [x] PWA Manifest + Install Prompt + Offline-Seite
 - [x] Dark Mode (Toggle + System-Präferenz)
-- [x] Bookmarks (Speichern + /gespeichert Seite)
-- [x] Suche (Cmd+K Overlay)
-- [x] Share Button (Native + Clipboard Fallback)
-- [x] Keyboard Navigation (j/k für Artikel)
+- [x] Toast-Benachrichtigungen, Skeleton States, Mobile Menu
+- [x] Share Button, Scroll-to-Top, Keyboard Navigation (j/k)
 
-**Media:**
-- [x] Live-Ticker (horizontal scrollbar)
-- [x] Video-Reels Karussell (9:16)
-- [x] Video-Modal mit Keyboard-Nav
+### Phase 2 — Backend & User (done) ✅
 
-**PWA:**
-- [x] Manifest.json
-- [x] Install Prompt
-- [x] Offline-Seite
+**Supabase Backend:**
+- [x] Supabase-Integration (Auth, DB, RLS, RPC)
+- [x] API-Layer (profile.ts, votes.ts, admin.ts)
 
-**UI:**
-- [x] Toast-Benachrichtigungen
-- [x] Scroll-to-Top Button
-- [x] Skeleton Loading States
-- [x] Mobile Menu (Accordion)
+**Admin-Dashboard:**
+- [x] `/admin` mit Auth-Schutz (AdminGuard, email-basiert)
+- [x] Artikel-, Vereine-, Jobs-CRUD
+- [x] Tippspiel-Ergebnisse eintragen (`/admin/votes`)
 
-### Nächste Schritte 🚀
+**User-Accounts:**
+- [x] Login/Register (`/login`)
+- [x] 3-Step Onboarding (Name, Vereine, Bezirk)
+- [x] Profil-Seite (`/profil`)
+- [x] UserMenu im Header (Avatar-Dropdown)
+- [x] "Mein Verein" Personalisierung (FavoritesSection + FavoritesBadge)
+- [x] Bookmarks: Supabase-first + localStorage-Fallback
 
-**Als Nächstes: Job-Plattform**
-- [ ] Job-Listings für Berliner Fußball (Trainer, Spieler, Ehrenamt)
-- [ ] Job-Detail-Seiten
-- [ ] Verein-Profile
+**Tippspiel:**
+- [x] 1-X-2 Voting pro Spiel (VoteButtons Segmented Pill)
+- [x] Prozentanzeige nach Vote (mit 15% Minimum-Floor)
+- [x] Match-Detail-Seite (`/spiel/[id]`)
+- [x] Scoreboard / Rangliste (`/tippspiel`)
+- [x] VoteButtons in LiveTicker + LeagueResults (compact)
+- [x] Login-Hinweis für nicht-eingeloggte User
 
-**Danach: API-Anbindung + Developer Dashboard**
-- [ ] Echte Tabellen-API
+**Reader Score / Gamification:**
+- [x] 30s Lesezeit → 10 Punkte (ReadingTracker)
+- [x] Duplikat-Schutz (articles_read Array)
+- [x] Leser-Level im UserMenu mit Progress Bar
+- [x] `calculateReadingTime()` Utility
+
+### Phase 3 — Eigene Daten (next) 🚀
+
+- [ ] Echte Tabellen-API (fussball.de Scraper oder manuelle Eingabe)
 - [ ] Echte Ergebnis-API
-- [ ] Live-Ticker mit WebSocket
-- [ ] Admin/Developer Dashboard
+- [ ] Artikel-CMS (Supabase statt Mock-Daten)
+- [ ] Verein-Profile mit echten Daten
+- [ ] Push-Notifications
 
-**Später: User & Personalisierung**
-- [ ] User-Login / Profile
-- [ ] "Mein Verein" Personalisierung
+### Phase 4 — Community
+
+- [ ] Kommentar-System
 - [ ] Leaderboard (Top-Leser)
 - [ ] Streaks (Tägliches Lesen)
-- [ ] Push-Notifications
-- [ ] Kommentar-System
+- [ ] User-generierte Inhalte
 
 ---
 
-## Gamification-System
+## Reader Score System
 
 ### Punkte
-- 10 Punkte pro gelesenem Artikel
+- 10 Punkte pro gelesenem Artikel (nach 30s Lesezeit)
+- Gespeichert in Supabase (`profiles.reader_points` + `profiles.articles_read`)
+- RPC `record_article_read` mit Duplikat-Schutz
 
 ### Level
 | Level | Punkte | Name |
 |-------|--------|------|
-| 1 | 0-50 | Kreisliga-Fan |
-| 2 | 51-150 | Bezirksliga-Kenner |
-| 3 | 151-300 | Landesliga-Experte |
-| 4 | 301-500 | Oberliga-Veteran |
-| 5 | 501+ | Bundesliga-Legende |
+| 1 | 0–99 | Kreisliga-Leser |
+| 2 | 100–499 | Bezirksliga-Leser |
+| 3 | 500–999 | Landesliga-Leser |
+| 4 | 1000+ | Berlin-Liga-Leser |
 
-### Speicherung
-- localStorage: `diago-user-progress`, `diago-read-articles`, `diago-bookmarks`
+### Anzeige
+- UserMenu: Level-Name + Punktzahl + Progress Bar (forest-green)
 
 ---
 
@@ -249,7 +323,6 @@ Ligen mit mehreren Staffeln (Landesliga, Bezirksliga, Kreisliga) haben Tabs zur 
 - Kleine, fokussierte Commits
 - Commit-Messages auf Deutsch
 - Format: `feat:`, `fix:`, `chore:`
-- Feature-Branches für größere Changes
 
 ---
 
@@ -265,7 +338,6 @@ Instagram Reels, TikTok, YouTube Shorts
 
 ## Bekannte Issues
 - [ ] PWA braucht noch PNG Icons (192x192, 512x512)
-- [ ] Dark Mode Kontrast teilweise noch nicht optimal
 - [ ] Nur SVG Icons vorhanden
 
 ---
