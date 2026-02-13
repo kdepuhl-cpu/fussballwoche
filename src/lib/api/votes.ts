@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import { getReaderLevel } from "@/lib/api/profile";
 
 // === Types ===
 
@@ -11,6 +12,7 @@ export interface VoteStats {
 export interface ScoreboardEntry {
   user_id: string;
   display_name: string;
+  reader_level: string;
   total_votes: number;
   correct_votes: number;
   accuracy_pct: number;
@@ -115,6 +117,55 @@ export async function setMatchResult(matchId: string, result: string): Promise<b
   return !error;
 }
 
+// === User Stats ===
+
+export async function getUserStats(userId: string): Promise<{ total_votes: number; correct_votes: number; accuracy_pct: number }> {
+  const [votesRes, resultsRes] = await Promise.all([
+    supabase.from("match_votes").select("match_id, vote").eq("user_id", userId),
+    supabase.from("match_results").select("match_id, result"),
+  ]);
+
+  if (votesRes.error || resultsRes.error) return { total_votes: 0, correct_votes: 0, accuracy_pct: 0 };
+
+  const votes = votesRes.data ?? [];
+  const resultMap = Object.fromEntries((resultsRes.data ?? []).map((r) => [r.match_id, r.result]));
+
+  let correct = 0;
+  for (const v of votes) {
+    if (resultMap[v.match_id] === v.vote) correct++;
+  }
+
+  return {
+    total_votes: votes.length,
+    correct_votes: correct,
+    accuracy_pct: votes.length > 0 ? Math.round((correct / votes.length) * 100) : 0,
+  };
+}
+
+export interface RecentVote {
+  match_id: string;
+  vote: string;
+  result: string | null;
+}
+
+export async function getUserRecentVotes(userId: string, limit = 5): Promise<RecentVote[]> {
+  const [votesRes, resultsRes] = await Promise.all([
+    supabase.from("match_votes").select("match_id, vote").eq("user_id", userId),
+    supabase.from("match_results").select("match_id, result"),
+  ]);
+
+  if (votesRes.error) return [];
+
+  const votes = votesRes.data ?? [];
+  const resultMap = Object.fromEntries((resultsRes.data ?? []).map((r) => [r.match_id, r.result]));
+
+  return votes.slice(-limit).reverse().map((v) => ({
+    match_id: v.match_id,
+    vote: v.vote,
+    result: resultMap[v.match_id] ?? null,
+  }));
+}
+
 // === Scoreboard ===
 
 export async function getScoreboard(): Promise<ScoreboardEntry[]> {
@@ -122,7 +173,7 @@ export async function getScoreboard(): Promise<ScoreboardEntry[]> {
   const [votesRes, resultsRes, profilesRes] = await Promise.all([
     supabase.from("match_votes").select("user_id, match_id, vote"),
     supabase.from("match_results").select("match_id, result"),
-    supabase.from("profiles").select("id, display_name"),
+    supabase.from("profiles").select("id, display_name, reader_points"),
   ]);
 
   if (votesRes.error || resultsRes.error || profilesRes.error) return [];
@@ -132,7 +183,14 @@ export async function getScoreboard(): Promise<ScoreboardEntry[]> {
   const profiles = profilesRes.data ?? [];
 
   const resultMap = Object.fromEntries(results.map((r) => [r.match_id, r.result]));
-  const profileMap = Object.fromEntries(profiles.map((p) => [p.id, p.display_name ?? "Anonym"]));
+
+  // Display name: use name from profile, but never show email addresses
+  const getSafeName = (name: string | null) => {
+    if (!name || name.includes("@")) return "Anonym";
+    return name;
+  };
+  const profileMap = Object.fromEntries(profiles.map((p) => [p.id, getSafeName(p.display_name)]));
+  const readerPointsMap = Object.fromEntries(profiles.map((p) => [p.id, p.reader_points ?? 0]));
 
   // Group votes by user
   const userStats: Record<string, { total: number; correct: number }> = {};
@@ -149,6 +207,7 @@ export async function getScoreboard(): Promise<ScoreboardEntry[]> {
   const scoreboard: ScoreboardEntry[] = Object.entries(userStats).map(([userId, stats]) => ({
     user_id: userId,
     display_name: profileMap[userId] ?? "Anonym",
+    reader_level: getReaderLevel(readerPointsMap[userId] ?? 0).name,
     total_votes: stats.total,
     correct_votes: stats.correct,
     accuracy_pct: stats.total > 0 ? Math.round((stats.correct / stats.total) * 100) : 0,

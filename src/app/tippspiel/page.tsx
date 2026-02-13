@@ -101,11 +101,18 @@ export default function TippspielPage() {
                         <td className="px-4 py-3 text-sm font-bold text-gray-400 dark:text-gray-500 tabular-nums">
                           {i + 1}
                         </td>
-                        <td className="px-4 py-3 text-sm font-medium text-off-black dark:text-white">
-                          {entry.display_name}
-                          {isMe && (
-                            <span className="ml-2 text-xs text-forest-green font-normal">(Du)</span>
-                          )}
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-off-black dark:text-white">
+                              {entry.display_name}
+                            </span>
+                            {isMe && (
+                              <span className="text-xs text-forest-green font-normal">(Du)</span>
+                            )}
+                          </div>
+                          <span className="text-xs text-gray-400 dark:text-gray-500">
+                            {entry.reader_level}
+                          </span>
                         </td>
                         <td className="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-300 tabular-nums">
                           {entry.total_votes}

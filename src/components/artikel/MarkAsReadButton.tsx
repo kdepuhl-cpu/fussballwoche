@@ -9,6 +9,8 @@ import {
   getNextLevel,
 } from "@/lib/gamification";
 import Confetti from "@/components/ui/Confetti";
+import { useUser } from "@/lib/user/auth";
+import { recordArticleRead } from "@/lib/api/profile";
 
 interface MarkAsReadButtonProps {
   articleId: string;
@@ -24,6 +26,7 @@ const LEVEL_CONFIG: Record<string, { emoji: string; color: string; bg: string }>
 };
 
 export default function MarkAsReadButton({ articleId }: MarkAsReadButtonProps) {
+  const { user, refreshProfile } = useUser();
   const [isRead, setIsRead] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -64,6 +67,11 @@ export default function MarkAsReadButton({ articleId }: MarkAsReadButtonProps) {
     if (result.levelUp) {
       setShowConfetti(true);
       setTimeout(() => setShowConfetti(false), 3000);
+    }
+
+    // Sync to Supabase
+    if (user) {
+      recordArticleRead(articleId).then(() => refreshProfile());
     }
   };
 
