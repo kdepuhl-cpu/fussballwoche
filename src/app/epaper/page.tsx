@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/navigation/Footer";
+// Cover images are now pre-generated static files — no client-side PDF rendering needed
 import { currentIssues, archivIssues } from "@/lib/mock/epaper";
 
 export default function EPaperPage() {
@@ -39,7 +40,7 @@ export default function EPaperPage() {
               className="object-cover group-hover:scale-[1.02] transition-transform duration-500"
               priority
             />
-            <div className="absolute top-3 left-3">
+            <div className="absolute top-3 left-3 z-10">
               <span className="bg-forest-green text-white text-xs font-bold px-3 py-1.5 rounded-full uppercase tracking-wide">
                 Neu
               </span>

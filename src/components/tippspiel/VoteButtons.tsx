@@ -119,6 +119,13 @@ export default function VoteButtons({ matchId, compact = false }: VoteButtonsPro
       className="w-full"
       onClick={(e) => { e.preventDefault(); e.stopPropagation(); }}
     >
+      {/* Sponsor Badge */}
+      {!compact && (
+        <div className="flex items-center gap-1 mb-1.5">
+          <span className="text-[10px] text-gray-400 dark:text-gray-500">Tipp präsentiert von Lotto Berlin</span>
+        </div>
+      )}
+
       {/* Segmented Pill */}
       <div className="flex rounded-lg border border-gray-300 dark:border-gray-500 overflow-hidden">
         {VOTE_OPTIONS.map((option, i) => {

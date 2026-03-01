@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Image from "next/image";
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/navigation/Footer";
 import { useUser } from "@/lib/user/auth";
@@ -27,9 +28,65 @@ export default function TippspielPage() {
       </div>
 
       <main className="max-w-3xl mx-auto px-4 py-8">
-        <h1 className="text-3xl font-headline text-off-black dark:text-white mb-6">
-          Tippspiel
-        </h1>
+        {/* Sponsor Header */}
+        <div className="flex items-center gap-3 mb-2">
+          <h1 className="text-3xl font-headline text-off-black dark:text-white">
+            Tippspiel
+          </h1>
+          <span className="text-xs text-gray-400 dark:text-gray-500 self-end mb-1">
+            präsentiert von
+          </span>
+          <Image
+            src="/icons/lotto-berlin.svg"
+            alt="Lotto Berlin"
+            width={120}
+            height={40}
+            className="h-8 w-auto self-end mb-0.5 dark:hidden"
+          />
+          <Image
+            src="/icons/lotto-berlin_white.svg"
+            alt="Lotto Berlin"
+            width={120}
+            height={40}
+            className="h-8 w-auto self-end mb-0.5 hidden dark:block"
+          />
+        </div>
+
+        {/* Sponsor Banner */}
+        <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+          <div className="flex items-center gap-4">
+            <Image
+              src="/icons/lotto-berlin.svg"
+              alt="Lotto Berlin"
+              width={80}
+              height={28}
+              className="h-10 w-auto flex-shrink-0 dark:hidden"
+            />
+            <Image
+              src="/icons/lotto-berlin_white.svg"
+              alt="Lotto Berlin"
+              width={80}
+              height={28}
+              className="h-10 w-auto flex-shrink-0 hidden dark:block"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-semibold text-off-black dark:text-white">
+                Tippe richtig und gewinne mit Lotto Berlin
+              </p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">
+                Unter allen richtigen Tipps werden jede Woche attraktive Preise verlost.
+              </p>
+            </div>
+            <a
+              href="https://www.lotto-berlin.de"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden sm:block px-4 py-2 bg-forest-green text-white text-sm font-semibold rounded-lg hover:bg-forest-green/90 transition-colors whitespace-nowrap flex-shrink-0"
+            >
+              Mehr erfahren
+            </a>
+          </div>
+        </div>
 
         {/* Eigene Stats Card */}
         {myEntry && (
@@ -65,8 +122,8 @@ export default function TippspielPage() {
 
         {/* Rangliste */}
         <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-            <h2 className="font-headline text-lg text-off-black dark:text-white">Rangliste</h2>
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
+            <h2 className="font-headline text-lg text-off-black dark:text-white">Lotto Berlin Rangliste</h2>
           </div>
 
           {loading ? (
@@ -130,6 +187,13 @@ export default function TippspielPage() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Sponsor Footer */}
+        <div className="mt-6 text-center">
+          <p className="text-xs text-gray-400 dark:text-gray-500">
+            Ein Angebot in Zusammenarbeit mit Lotto Berlin. Spielen ab 18 Jahren. Spielteilnahme ab 18.
+          </p>
         </div>
       </main>
 

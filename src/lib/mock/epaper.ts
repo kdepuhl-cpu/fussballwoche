@@ -5,6 +5,7 @@ export interface EPaperIssue {
   coverImage: string;
   pages: string[];
   pageCount: number;
+  pdfUrl?: string;
 }
 
 export interface ArchivIssue extends EPaperIssue {
@@ -31,6 +32,15 @@ function generatePages(count: number, color: string): string[] {
 }
 
 export const currentIssues: EPaperIssue[] = [
+  {
+    id: "ausgabe-42",
+    title: "Ausgabe 42",
+    date: "2026-03-01",
+    coverImage: "/epaper/ausgabe-42-cover.jpg",
+    pages: generatePages(32, "044110"),
+    pageCount: 32,
+    pdfUrl: "/epaper/Ausgabe_42.pdf",
+  },
   {
     id: "ausgabe-12-2026",
     title: "Ausgabe 12 | März 2026",

@@ -41,8 +41,10 @@ export default function Header() {
   const { user, loading: authLoading, signOut } = useUser();
   const [scrolled, setScrolled] = useState(false);
   const [navOverflowing, setNavOverflowing] = useState(false);
+  const [dropdownLeft, setDropdownLeft] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navContainerRef = useRef<HTMLDivElement>(null);
+  const categoryRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Detect scroll for header shadow
@@ -108,6 +110,14 @@ export default function Header() {
   const handleCategoryEnter = (category: LeagueCategory) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
+    }
+    // Measure button position relative to the dropdown wrapper
+    const btn = categoryRefs.current.get(category);
+    const wrapper = dropdownRef.current;
+    if (btn && wrapper) {
+      const btnRect = btn.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
+      setDropdownLeft(btnRect.left - wrapperRect.left);
     }
     setActiveCategory(category);
     setExpandedLeague(null);
@@ -204,14 +214,21 @@ export default function Header() {
               </svg>
             </button>
 
-            {/* Logo - FUWO compact wordmark */}
+            {/* Logo — responsive: full "Fußball-Woche" on wide, compact "FuWo" on narrow */}
             <Link href="/" className="flex items-center">
+              <Image
+                src="/icons/fussball-woche_white.svg"
+                alt="Fußball-Woche"
+                width={140}
+                height={22}
+                className="h-5 w-auto hidden lg:block"
+              />
               <Image
                 src="/icons/fuwo_white.svg"
                 alt="Fußball-Woche"
-                width={80}
-                height={28}
-                className="h-7 w-auto"
+                width={60}
+                height={22}
+                className="h-5 w-auto lg:hidden"
               />
             </Link>
 
@@ -219,93 +236,74 @@ export default function Header() {
             <div className="h-6 w-px bg-gray-600 mx-5 hidden md:block" />
 
             {/* Desktop Navigation — Athletic-style with overflow fade */}
-            <div className="hidden md:flex items-stretch flex-1 relative min-w-0">
-              <nav
+            <div className="hidden md:flex items-stretch flex-1 relative min-w-0" ref={dropdownRef}>
+              <div
                 ref={navContainerRef}
                 className="flex items-stretch gap-1 overflow-hidden flex-1 min-w-0"
               >
-                {/* Priority items: E-Paper, Tippspiel, Jobs */}
+                {/* League category dropdowns — buttons only (dropdowns render below) */}
+                {categories.map((cat) => (
+                  <div
+                    key={cat.id}
+                    ref={(el) => { if (el) categoryRefs.current.set(cat.id, el); }}
+                    className="relative flex-shrink-0"
+                    onMouseEnter={() => handleCategoryEnter(cat.id)}
+                    onMouseLeave={handleCategoryLeave}
+                  >
+                    <button
+                      className={`px-3 py-3 flex items-center gap-1.5 text-sm font-medium transition-colors relative h-full whitespace-nowrap
+                        ${activeCategory === cat.id
+                          ? "bg-white/10 text-white"
+                          : "text-gray-300 hover:bg-white/10 hover:text-white"
+                        }`}
+                    >
+                      {cat.label}
+                      <svg
+                        className={`w-3 h-3 transition-transform ${activeCategory === cat.id ? "rotate-180" : ""}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                      {activeCategory === cat.id && (
+                        <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-electric-orange" />
+                      )}
+                    </button>
+                  </div>
+                ))}
+
+                <div className="h-6 w-px bg-gray-700 self-center flex-shrink-0" />
+
+                {/* E-Paper, Tippspiel, Jobs, Vereine */}
                 <Link
                   href="/epaper"
-                  className="px-3 py-3 flex items-center gap-1.5 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
+                  className="px-3 py-3 flex items-center text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
                 >
                   E-Paper
                 </Link>
 
                 <Link
                   href="/tippspiel"
-                  className="px-3 py-3 flex items-center gap-1.5 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
+                  className="px-3 py-3 flex items-center text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
                 >
                   Tippspiel
                 </Link>
 
                 <Link
                   href="/jobs"
-                  className="px-3 py-3 flex items-center gap-1.5 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
+                  className="px-3 py-3 flex items-center text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
                 >
                   Jobs
                 </Link>
 
-                <div className="h-6 w-px bg-gray-700 self-center flex-shrink-0" />
-
-                {/* League category dropdowns */}
-                <div className="flex items-stretch gap-1 flex-shrink-0" ref={dropdownRef}>
-                  {categories.map((cat) => (
-                    <div
-                      key={cat.id}
-                      className="relative flex-shrink-0"
-                      onMouseEnter={() => handleCategoryEnter(cat.id)}
-                      onMouseLeave={handleCategoryLeave}
-                    >
-                      <button
-                        className={`px-3 py-3 flex items-center gap-1.5 text-sm font-medium transition-colors relative h-full whitespace-nowrap
-                          ${activeCategory === cat.id
-                            ? "bg-white/10 text-white"
-                            : "text-gray-300 hover:bg-white/10 hover:text-white"
-                          }`}
-                      >
-                        {cat.label}
-                        <svg
-                          className={`w-3 h-3 transition-transform ${activeCategory === cat.id ? "rotate-180" : ""}`}
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                        {activeCategory === cat.id && (
-                          <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-electric-orange" />
-                        )}
-                      </button>
-
-                      {/* Dropdown */}
-                      {activeCategory === cat.id && (
-                        <div
-                          className="absolute top-full left-0 mt-0 bg-off-black border border-gray-700 rounded-b-md shadow-lg py-2 min-w-[220px] z-50"
-                          onMouseEnter={handleDropdownEnter}
-                          onMouseLeave={handleDropdownLeave}
-                        >
-                          {getLeaguesByCategory(cat.id).map((league) =>
-                            renderLeagueItem(league, () => {
-                              setActiveCategory(null);
-                              setExpandedLeague(null);
-                            })
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-
-                  <div className="h-6 w-px bg-gray-700 self-center flex-shrink-0" />
-
-                  <Link
-                    href="/vereine"
-                    className="px-3 py-3 flex items-center gap-1.5 text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
-                  >
-                    Vereine
-                  </Link>
-                </div>
-              </nav>
+                <Link
+                  href="/vereine"
+                  className="px-3 py-3 flex items-center text-sm font-medium text-gray-300 hover:bg-white/10 hover:text-white transition-colors relative h-full whitespace-nowrap flex-shrink-0"
+                >
+                  Vereine
+                </Link>
+              </div>
 
               {/* Overflow fade + dots indicator */}
               {navOverflowing && (
@@ -323,6 +321,23 @@ export default function Header() {
                       <circle cx="19" cy="12" r="2" />
                     </svg>
                   </button>
+                </div>
+              )}
+
+              {/* Dropdown panels — rendered outside overflow-hidden container */}
+              {activeCategory && (
+                <div
+                  className="absolute top-full mt-0 bg-off-black border border-gray-700 rounded-b-md shadow-lg py-2 min-w-[220px] z-50"
+                  style={{ left: `${dropdownLeft}px` }}
+                  onMouseEnter={handleDropdownEnter}
+                  onMouseLeave={handleDropdownLeave}
+                >
+                  {getLeaguesByCategory(activeCategory).map((league) =>
+                    renderLeagueItem(league, () => {
+                      setActiveCategory(null);
+                      setExpandedLeague(null);
+                    })
+                  )}
                 </div>
               )}
             </div>

@@ -121,10 +121,13 @@ export default function LiveTicker({ matches = ALL_MATCHES, title = "Topspiele" 
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
         <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2">
             <h2 className="font-headline text-lg text-off-black dark:text-white">
               {title}
             </h2>
+            <span className="text-[10px] text-gray-400 dark:text-gray-500 self-end mb-0.5">
+              präsentiert von Lotto Berlin
+            </span>
           </div>
 
           {/* Navigation Arrows */}
