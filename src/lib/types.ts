@@ -57,6 +57,7 @@ export interface Artikel {
   autor?: Autor;
   lesedauer?: number;
   featured?: boolean;
+  premium?: boolean;
   tags?: string[];
 }
 

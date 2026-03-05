@@ -14,6 +14,7 @@ import CultureSection from "@/components/kultur/CultureSection";
 import ProfiClubHomeSection from "@/components/proficlub/ProfiClubHomeSection";
 import AdSlot from "@/components/ads/AdSlot";
 import PartnerSlider from "@/components/ads/PartnerSlider";
+import NewsletterSignup from "@/components/newsletter/NewsletterSignup";
 import { artikel } from "@/lib/data";
 import { HERTHA_ARTICLES, HERTHA_MATCHES, UNION_ARTICLES, UNION_MATCHES } from "@/lib/mock/proficlubs";
 
@@ -113,6 +114,9 @@ export default function Home() {
         </div>
 
         <VideoReels />
+
+        {/* Newsletter: Kurzpass */}
+        <NewsletterSignup variant="banner" />
 
         {/* Ad: Mid-Article */}
         <div className="my-8">

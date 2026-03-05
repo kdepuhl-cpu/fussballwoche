@@ -463,6 +463,7 @@ Unsere Prognose: Altglienicke hat die besten Karten, doch der BFC könnte im dir
     lesedauer: 6,
     tags: ["Berlin-Liga", "Aufstieg", "VSG Altglienicke", "BFC Dynamo", "Tennis Borussia"],
     vereinIds: ["altglienicke", "bfc-dynamo", "tebe"],
+    premium: true,
   },
   {
     id: "33",
@@ -518,6 +519,7 @@ König: Das 4:0 gegen Cottbus II im Pokal. Da hat alles gepasst — die Leistung
     autor: { name: "Robert Klein", bild: "https://placehold.co/80x80/333333/white?text=RK" },
     lesedauer: 7,
     tags: ["Hertha Zehlendorf", "Oberliga", "Interview", "Aufstieg"],
+    premium: true,
   },
   {
     id: "35",
@@ -578,6 +580,7 @@ Croatia warf in der Schlussphase alles nach vorne. Trainer Babic brachte zwei fr
     autor: { name: "Mia Richter" },
     lesedauer: 5,
     tags: ["Kultur", "Fashion", "Streetwear", "Trikots", "Berlin"],
+    premium: true,
   },
   {
     id: "38",

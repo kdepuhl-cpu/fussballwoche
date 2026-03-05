@@ -13,6 +13,7 @@ import { artikel, getArtikelBySlug, formatDate } from "@/lib/data";
 import { KATEGORIE_LABELS } from "@/lib/types";
 import { calculateReadingTime } from "@/lib/utils";
 import ReadingTracker from "@/components/artikel/ReadingTracker";
+import PaywallGate from "@/components/abo/PaywallGate";
 
 function CommentIcon() {
   return (
@@ -141,7 +142,21 @@ export default async function ArtikelPage({ params }: PageProps) {
         </div>
 
         {/* Article Body */}
-        {article.inhalt ? (
+        {article.premium ? (
+          <PaywallGate previewLines={3}>
+            {article.inhalt ? (
+              <article className="prose prose-lg max-w-none mt-10 space-y-6">
+                {article.inhalt.split("\n\n").map((paragraph, index) => (
+                  <p key={index}>{paragraph}</p>
+                ))}
+              </article>
+            ) : (
+              <article className="prose prose-lg max-w-none mt-10 space-y-6">
+                <p>{ARTICLE_TEXT}</p>
+              </article>
+            )}
+          </PaywallGate>
+        ) : article.inhalt ? (
           <article className="prose prose-lg max-w-none mt-10 space-y-6">
             {article.inhalt.split("\n\n").map((paragraph, index) => (
               <p key={index}>{paragraph}</p>

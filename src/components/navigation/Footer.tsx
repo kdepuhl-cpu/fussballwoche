@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import NewsletterSignup from "@/components/newsletter/NewsletterSignup";
 
 const ligenLinks = [
   { name: "Bundesliga", href: "/liga/bundesliga" },
@@ -16,16 +16,6 @@ const ligenLinks = [
 
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-  const [email, setEmail] = useState("");
-  const [subscribed, setSubscribed] = useState(false);
-
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (email) {
-      setSubscribed(true);
-      setEmail("");
-    }
-  };
 
   return (
     <footer className="bg-off-black text-gray-400 mt-12">
@@ -175,35 +165,9 @@ export default function Footer() {
               Kurzpass
             </h4>
             <p className="text-sm text-gray-500 mb-4">
-              Unser Newsletter – die wichtigsten News direkt in dein Postfach.
+              Unser Newsletter &ndash; die wichtigsten News direkt in dein Postfach.
             </p>
-            {subscribed ? (
-              <div className="bg-forest-green/20 border border-forest-green/30 rounded-lg p-4">
-                <p className="text-forest-green text-sm flex items-center gap-2">
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                  Angemeldet!
-                </p>
-              </div>
-            ) : (
-              <form onSubmit={handleNewsletterSubmit} className="space-y-2">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="deine@email.de"
-                  className="w-full px-4 py-3 min-h-[44px] bg-white/10 border border-gray-700 rounded-lg text-white placeholder-gray-500 text-sm focus:outline-none focus:border-forest-green focus:ring-1 focus:ring-forest-green transition-colors"
-                  required
-                />
-                <button
-                  type="submit"
-                  className="w-full px-4 py-3 min-h-[44px] bg-forest-green text-white rounded-lg text-sm font-semibold hover:bg-forest-green/90 transition-colors"
-                >
-                  Anmelden
-                </button>
-              </form>
-            )}
+            <NewsletterSignup variant="footer" />
           </div>
         </div>
       </div>
