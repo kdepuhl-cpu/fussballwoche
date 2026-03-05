@@ -15,14 +15,14 @@ export interface ArchivIssue extends EPaperIssue {
 }
 
 const COVER_IMAGES = {
-  current1: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=800&h=1100&fit=crop",
-  current2: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?w=800&h=1100&fit=crop",
-  current3: "https://images.unsplash.com/photo-1522778119026-d647f0596c20?w=800&h=1100&fit=crop",
-  current4: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=800&h=1100&fit=crop",
-  archiv1: "https://images.unsplash.com/photo-1459865264687-595d652de67e?w=800&h=1100&fit=crop",
-  archiv2: "https://images.unsplash.com/photo-1551958219-acbc608c6377?w=800&h=1100&fit=crop",
-  archiv3: "https://images.unsplash.com/photo-1489944440615-453fc2b6a9a9?w=800&h=1100&fit=crop",
-  archiv4: "https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=800&h=1100&fit=crop",
+  current1: "https://placehold.co/800x1100/044110/FAFAFA?text=Fu%C3%9Fball-Woche%0AAusgabe+12",
+  current2: "https://placehold.co/800x1100/044110/FAFAFA?text=Fu%C3%9Fball-Woche%0AAusgabe+11",
+  current3: "https://placehold.co/800x1100/044110/FAFAFA?text=Fu%C3%9Fball-Woche%0AAusgabe+10",
+  current4: "https://placehold.co/800x1100/044110/FAFAFA?text=Fu%C3%9Fball-Woche%0AAusgabe+9",
+  archiv1: "https://placehold.co/800x1100/8B7355/FAFAFA?text=Fu%C3%9Fball-Woche%0AArchiv",
+  archiv2: "https://placehold.co/800x1100/8B7355/FAFAFA?text=Fu%C3%9Fball-Woche%0AArchiv",
+  archiv3: "https://placehold.co/800x1100/8B7355/FAFAFA?text=Fu%C3%9Fball-Woche%0AArchiv",
+  archiv4: "https://placehold.co/800x1100/8B7355/FAFAFA?text=Fu%C3%9Fball-Woche%0AArchiv",
 };
 
 function generatePages(count: number, color: string): string[] {

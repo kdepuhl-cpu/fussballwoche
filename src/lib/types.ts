@@ -40,7 +40,8 @@ export interface Autor {
   bild?: string;
 }
 
-export type Kategorie = "spielbericht" | "analyse" | "transfer" | "news" | "interview";
+// NOTE: When migrating to Supabase articles table, update the category CHECK constraint to include 'kultur'
+export type Kategorie = "spielbericht" | "analyse" | "transfer" | "news" | "interview" | "kultur";
 
 export interface Artikel {
   id: string;
@@ -65,6 +66,7 @@ export const KATEGORIE_LABELS: Record<Kategorie, string> = {
   transfer: "Transfer",
   news: "News",
   interview: "Interview",
+  kultur: "Kultur",
 };
 
 // === Vereinsprofile ===

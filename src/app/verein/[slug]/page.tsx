@@ -7,6 +7,7 @@ import ClubInfo from "@/components/verein/ClubInfo";
 import ClubTraining from "@/components/verein/ClubTraining";
 import ClubKontakte from "@/components/verein/ClubKontakte";
 import ClubArticles from "@/components/verein/ClubArticles";
+import SocialFeed from "@/components/verein/SocialFeed";
 import { getAllVereinSlugs, getVereinBySlug } from "@/lib/mock/clubs";
 import { artikel } from "@/lib/data";
 
@@ -67,6 +68,11 @@ export default async function VereinDetailPage({ params }: PageProps) {
             <ClubInfo sportstaette={club.sportstaette} />
             <ClubTraining trainingszeiten={club.trainingszeiten} />
             <ClubKontakte ansprechpartner={club.ansprechpartner} />
+            <SocialFeed
+              instagramUrl={club.socialMedia?.instagram}
+              facebookUrl={club.socialMedia?.facebook}
+              clubName={club.kurzname}
+            />
           </div>
 
           {/* Sidebar */}

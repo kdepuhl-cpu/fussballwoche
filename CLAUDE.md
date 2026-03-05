@@ -1,7 +1,7 @@
-# CLAUDE.md – DIAGO
+# CLAUDE.md – Fussballwoche
 
 ## Projektübersicht
-DIAGO ist eine News-PWA für Berliner Amateurfußball-Fans. Inspiriert von der "Fußball-Woche", einer Berliner Print-Institution die 2024 eingestellt wurde.
+Fussballwoche ist eine News-PWA für Berliner Amateurfußball-Fans. Inspiriert von der "Fußball-Woche", einer Berliner Print-Institution die 2024 eingestellt wurde.
 
 **Ziel:** Lokale Fußball-News aus verschiedenen Ligen an einem Ort – von Bundesliga bis Kreisliga.
 
@@ -20,8 +20,8 @@ DIAGO ist eine News-PWA für Berliner Amateurfußball-Fans. Inspiriert von der "
 ---
 
 ## Deployment
-- **GitHub:** `kdepuhl-cpu/diago`
-- **Netlify:** https://diagonista.netlify.app/
+- **GitHub:** `kdepuhl-cpu/fussballwoche`
+- **Netlify:** https://diagonista.netlify.app/ (Migration zu fussballwoche.netlify.app ausstehend)
 - **Branch `main`:** Produktions-Code, Auto-Deploy bei Push
 - **Netlify CLI:** Projekt gelinkt (`netlify link`)
 - **Environment Variables** (Netlify): `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `NEXT_PUBLIC_ADMIN_EMAILS`
@@ -143,7 +143,7 @@ src/
 │   ├── admin/
 │   │   ├── Sidebar.tsx
 │   │   └── AdminGuard.tsx
-│   ├── LiveTicker.tsx (DIAGO Topspiele Widget)
+│   ├── LiveTicker.tsx (Topspiele Widget)
 │   ├── LeagueResults.tsx (Spieltag-Ansicht + VoteButtons)
 │   ├── VideoReels.tsx (Video-Karussell)
 │   ├── VideoModal.tsx (Video-Player Modal)
@@ -217,7 +217,7 @@ Eindeutige shortNames: "Berlin-Liga" (nicht "BL"), "Frauen-BL" (nicht "F-BL"), J
 - [x] Artikel-Detailseite mit Reading Progress Bar
 - [x] Liga-Seiten mit Tabelle & Spielplan
 - [x] Liga-Navigation (Herren|Frauen|Pokal|Jugend Dropdowns)
-- [x] DIAGO Topspiele Widget (dynamischer Spieltag + Logo)
+- [x] Topspiele Widget (dynamischer Spieltag + Logo)
 - [x] Video-Reels Karussell (9:16) + Video-Modal
 - [x] Tag-Seiten, Suche (Cmd+K), Meistgelesen-Sektion
 

@@ -87,6 +87,14 @@ export default function Footer() {
               >
                 FUWO Archiv
               </Link>
+              <a
+                href="https://fuwothek.de"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block text-sm hover:text-white transition-colors"
+              >
+                FuWothek &mdash; 100 Jahre Archiv
+              </a>
             </nav>
             <h4 className="text-white font-semibold mb-4 text-sm uppercase tracking-wider">
               Vereine

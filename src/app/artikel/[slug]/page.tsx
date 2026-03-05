@@ -8,6 +8,7 @@ import MarkAsReadButton from "@/components/artikel/MarkAsReadButton";
 import MarkAsReadOnView from "@/components/artikel/MarkAsReadOnView";
 import ShareButton from "@/components/ui/ShareButton";
 import BookmarkButton from "@/components/ui/BookmarkButton";
+import FeedbackButton from "@/components/ui/FeedbackButton";
 import { artikel, getArtikelBySlug, formatDate } from "@/lib/data";
 import { KATEGORIE_LABELS } from "@/lib/types";
 import { calculateReadingTime } from "@/lib/utils";
@@ -102,7 +103,11 @@ export default async function ArtikelPage({ params }: PageProps) {
           {article.autor?.bild ? (
             <Image src={article.autor.bild} alt={article.autor.name} width={40} height={40} className="w-10 h-10 rounded-full mb-3 object-cover" />
           ) : (
-            <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mb-3" />
+            <div className="w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700 mb-3 flex items-center justify-center">
+              <svg className="w-5 h-5 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+              </svg>
+            </div>
           )}
           <div className="text-center">
             <p className="text-sm">
@@ -248,7 +253,11 @@ export default async function ArtikelPage({ params }: PageProps) {
             {article.autor?.bild ? (
               <Image src={article.autor.bild} alt={article.autor?.name || "Autor"} width={48} height={48} className="w-12 h-12 rounded-full flex-shrink-0 object-cover" />
             ) : (
-              <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0" />
+              <div className="w-12 h-12 rounded-full bg-gray-300 dark:bg-gray-700 flex-shrink-0 flex items-center justify-center">
+                <svg className="w-6 h-6 text-gray-500 dark:text-gray-400" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" />
+                </svg>
+              </div>
             )}
             <div>
               <p className="font-semibold text-off-black dark:text-white">
@@ -280,6 +289,12 @@ export default async function ArtikelPage({ params }: PageProps) {
 
         <div className="mt-8">
           <MarkAsReadButton articleId={article.id} />
+        </div>
+
+        {/* Feedback */}
+        <div className="flex items-center gap-3 mt-8 pt-6 border-t border-gray-100 dark:border-gray-800">
+          <span className="text-xs text-gray-400 dark:text-gray-500">Hat dir dieser Artikel gefallen?</span>
+          <FeedbackButton pageUrl={`/artikel/${slug}`} context="article" />
         </div>
 
         {/* Related Articles */}
