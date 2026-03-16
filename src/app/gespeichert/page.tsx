@@ -7,11 +7,13 @@ import Header from "@/components/navigation/Header";
 import Footer from "@/components/navigation/Footer";
 import BookmarkButton from "@/components/ui/BookmarkButton";
 import { useBookmarks } from "@/hooks/useBookmarks";
-import { artikel, formatDate, getLigaById } from "@/lib/data";
+import { useArticles } from "@/hooks/useArticles";
+import { formatDate, getLigaById } from "@/lib/data";
 import { Artikel } from "@/lib/types";
 
 export default function GespeichertPage() {
   const { bookmarks } = useBookmarks();
+  const { articles: artikel } = useArticles();
   const [savedArticles, setSavedArticles] = useState<Artikel[]>([]);
 
   useEffect(() => {
@@ -19,7 +21,7 @@ export default function GespeichertPage() {
       .map((slug) => artikel.find((a) => a.slug === slug))
       .filter((a): a is Artikel => a !== undefined);
     setSavedArticles(articles);
-  }, [bookmarks]);
+  }, [bookmarks, artikel]);
 
   return (
     <div className="min-h-screen bg-off-white dark:bg-gray-900">

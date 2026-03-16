@@ -15,10 +15,12 @@ import ProfiClubHomeSection from "@/components/proficlub/ProfiClubHomeSection";
 import AdSlot from "@/components/ads/AdSlot";
 import PartnerSlider from "@/components/ads/PartnerSlider";
 import NewsletterSignup from "@/components/newsletter/NewsletterSignup";
-import { artikel } from "@/lib/data";
+import { useArticles } from "@/hooks/useArticles";
 import { HERTHA_ARTICLES, HERTHA_MATCHES, UNION_ARTICLES, UNION_MATCHES } from "@/lib/mock/proficlubs";
 
 export default function Home() {
+  const { articles: artikel } = useArticles();
+
   const bundesligaArtikel = artikel.filter((a) => a.ligaId === "bundesliga-1");
   const zweiteLigaArtikel = artikel.filter((a) => a.ligaId === "bundesliga-2");
   const dritteLigaArtikel = artikel.filter((a) => a.ligaId === "liga-3");

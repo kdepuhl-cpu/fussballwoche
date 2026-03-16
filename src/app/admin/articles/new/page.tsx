@@ -9,7 +9,7 @@ import SlugInput from "@/components/admin/SlugInput";
 import TagInput from "@/components/admin/TagInput";
 import { createArticle, type ArticleInput } from "@/lib/api/admin";
 
-const CATEGORIES = ["spielbericht", "analyse", "transfer", "news", "interview"];
+const CATEGORIES = ["spielbericht", "analyse", "transfer", "news", "interview", "kultur"];
 
 export default function NewArticlePage() {
   return (
@@ -44,6 +44,7 @@ function ArticleForm() {
   const [authorName, setAuthorName] = useState("");
   const [authorImage, setAuthorImage] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [readingTime, setReadingTime] = useState<number>(5);
   const [leagueId, setLeagueId] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -68,6 +69,7 @@ function ArticleForm() {
         author_image: authorImage || null,
         published_at: new Date().toISOString(),
         is_featured: isFeatured,
+        is_premium: isPremium,
         reading_time_minutes: readingTime || null,
         league_id: leagueId || null,
         club_ids: [],
@@ -151,15 +153,27 @@ function ArticleForm() {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={isFeatured}
-            onChange={(e) => setIsFeatured(e.target.checked)}
-            className="rounded border-gray-300 text-forest-green focus:ring-forest-green"
-          />
-          <span className="text-sm text-gray-700">Featured Artikel</span>
-        </label>
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isFeatured}
+              onChange={(e) => setIsFeatured(e.target.checked)}
+              className="rounded border-gray-300 text-forest-green focus:ring-forest-green"
+            />
+            <span className="text-sm text-gray-700">Featured Artikel</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={isPremium}
+              onChange={(e) => setIsPremium(e.target.checked)}
+              className="rounded border-gray-300 text-electric-orange focus:ring-electric-orange"
+            />
+            <span className="text-sm text-gray-700">Premium (Paywall)</span>
+          </label>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">

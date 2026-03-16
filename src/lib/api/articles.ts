@@ -70,6 +70,45 @@ export async function getFeaturedArticle(): Promise<Artikel | undefined> {
   return articleRowToArtikel(data as ArticleRow);
 }
 
+export async function getArticlesByTag(tag: string): Promise<Artikel[]> {
+  const tagSlug = tag.toLowerCase().replace(/\s+/g, "-").replace(/\./g, "");
+
+  if (!isSupabaseConfigured()) {
+    return mockArtikel.filter((a) =>
+      a.tags?.some(
+        (t) => t.toLowerCase().replace(/\s+/g, "-").replace(/\./g, "") === tagSlug
+      )
+    );
+  }
+
+  // Supabase: suche nach originalem Tag-Text (nicht slug)
+  // Da wir den Original-Tag nicht kennen, laden wir alle und filtern client-side
+  const all = await getArticles();
+  return all.filter((a) =>
+    a.tags?.some(
+      (t) => t.toLowerCase().replace(/\s+/g, "-").replace(/\./g, "") === tagSlug
+    )
+  );
+}
+
+export async function getArticleSlugs(): Promise<string[]> {
+  if (!isSupabaseConfigured()) {
+    return mockArtikel.map((a) => a.slug);
+  }
+
+  const { data, error } = await supabase
+    .from("articles")
+    .select("slug");
+
+  if (error || !data || data.length === 0) {
+    return mockArtikel.map((a) => a.slug);
+  }
+
+  const dbSlugs = data.map((d: { slug: string }) => d.slug);
+  const mockSlugs = mockArtikel.map((a) => a.slug);
+  return Array.from(new Set([...dbSlugs, ...mockSlugs]));
+}
+
 export async function incrementViewCount(articleId: string): Promise<void> {
   if (!isSupabaseConfigured()) return;
 

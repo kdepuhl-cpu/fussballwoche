@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import Header from "@/components/navigation/Header";
 import Footer from "@/components/navigation/Footer";
+import LeagueTable from "@/components/liga/LeagueTable";
+import LeagueMatches from "@/components/liga/LeagueMatches";
 import LeagueResults from "@/components/LeagueResults";
 import VideoReels from "@/components/VideoReels";
 import {
@@ -23,10 +25,10 @@ interface PageProps {
 
 // Tier badge colors
 function getTierBadgeColor(tier: number): string {
-  if (tier <= 2) return "bg-yellow-500 text-yellow-900"; // Gold for top leagues
-  if (tier <= 4) return "bg-gray-300 text-gray-800"; // Silver for pro leagues
-  if (tier <= 6) return "bg-amber-600 text-white"; // Bronze for semi-pro
-  return "bg-gray-500 text-white"; // Default for amateur
+  if (tier <= 2) return "bg-yellow-500 text-yellow-900";
+  if (tier <= 4) return "bg-gray-300 text-gray-800";
+  if (tier <= 6) return "bg-amber-600 text-white";
+  return "bg-gray-500 text-white";
 }
 
 // Region badge colors
@@ -38,18 +40,6 @@ function getRegionBadgeColor(region: League["region"]): string {
   };
   return colors[region];
 }
-
-// Placeholder table data
-const placeholderTable = [
-  { pos: 1, team: "Hertha BSC II", sp: 18, s: 12, u: 4, n: 2, tore: "42:15", diff: "+27", pkt: 40 },
-  { pos: 2, team: "BFC Dynamo", sp: 18, s: 11, u: 3, n: 4, tore: "38:20", diff: "+18", pkt: 36 },
-  { pos: 3, team: "VSG Altglienicke", sp: 18, s: 10, u: 5, n: 3, tore: "35:18", diff: "+17", pkt: 35 },
-  { pos: 4, team: "Tennis Borussia", sp: 18, s: 9, u: 4, n: 5, tore: "30:22", diff: "+8", pkt: 31 },
-  { pos: 5, team: "Berliner AK 07", sp: 18, s: 8, u: 5, n: 5, tore: "28:24", diff: "+4", pkt: 29 },
-  { pos: 6, team: "Viktoria 89", sp: 18, s: 7, u: 6, n: 5, tore: "26:23", diff: "+3", pkt: 27 },
-  { pos: 7, team: "FC Viktoria 1889", sp: 18, s: 6, u: 6, n: 6, tore: "24:25", diff: "-1", pkt: 24 },
-  { pos: 8, team: "SC Staaken", sp: 18, s: 5, u: 5, n: 8, tore: "20:28", diff: "-8", pkt: 20 },
-];
 
 export default async function LigaPage({ params }: PageProps) {
   const { slug } = await params;
@@ -78,6 +68,9 @@ export default async function LigaPage({ params }: PageProps) {
   const pageTitle = isStaffelPage && staffel
     ? `${league.name} - ${staffel.name}`
     : league.name;
+
+  // Welche league_id für die Tabellen-Query? Bei Staffel: staffel.id, sonst league.id
+  const tableLeagueId = isStaffelPage && staffel ? staffel.id : league.id;
 
   // Get videos for this league
   const leagueVideos = getVideosByLeague(league.id);
@@ -112,15 +105,12 @@ export default async function LigaPage({ params }: PageProps) {
         {/* Header */}
         <div className="mb-8">
           <div className="flex flex-wrap items-center gap-3 mb-4">
-            {/* Tier Badge */}
             <span className={`px-3 py-1 text-xs font-bold rounded-full ${getTierBadgeColor(league.tier)}`}>
               {getTierLabel(league.tier)}
             </span>
-            {/* Region Badge */}
             <span className={`px-3 py-1 text-xs font-medium rounded-full ${getRegionBadgeColor(league.region)}`}>
               {getRegionLabel(league.region)}
             </span>
-            {/* Category Badge */}
             <span className="px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300">
               {getCategoryLabel(league.category)}
             </span>
@@ -166,61 +156,7 @@ export default async function LigaPage({ params }: PageProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content - Table */}
           <div className="lg:col-span-2">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                <h2 className="font-headline text-xl text-off-black dark:text-white">Tabelle</h2>
-              </div>
-
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm tabular-nums">
-                  <thead className="bg-gray-50 dark:bg-gray-900">
-                    <tr className="text-left text-gray-500 dark:text-gray-400">
-                      <th className="px-4 py-3 font-medium">#</th>
-                      <th className="px-4 py-3 font-medium">Verein</th>
-                      <th className="px-4 py-3 font-medium text-center">Sp</th>
-                      <th className="px-4 py-3 font-medium text-center hidden sm:table-cell">S</th>
-                      <th className="px-4 py-3 font-medium text-center hidden sm:table-cell">U</th>
-                      <th className="px-4 py-3 font-medium text-center hidden sm:table-cell">N</th>
-                      <th className="px-4 py-3 font-medium text-center hidden md:table-cell">Tore</th>
-                      <th className="px-4 py-3 font-medium text-center">Diff</th>
-                      <th className="px-4 py-3 font-medium text-center">Pkt</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
-                    {placeholderTable.map((row) => (
-                      <tr
-                        key={row.pos}
-                        className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
-                      >
-                        <td className="px-4 py-3 font-medium text-off-black dark:text-white">
-                          {row.pos}
-                        </td>
-                        <td className="px-4 py-3 font-medium text-off-black dark:text-white">
-                          {row.team}
-                        </td>
-                        <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300">{row.sp}</td>
-                        <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300 hidden sm:table-cell">{row.s}</td>
-                        <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300 hidden sm:table-cell">{row.u}</td>
-                        <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300 hidden sm:table-cell">{row.n}</td>
-                        <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300 hidden md:table-cell">{row.tore}</td>
-                        <td className={`px-4 py-3 text-center font-medium ${
-                          row.diff.startsWith("+") ? "text-green-600" : row.diff.startsWith("-") ? "text-red-500" : "text-gray-600"
-                        }`}>
-                          {row.diff}
-                        </td>
-                        <td className="px-4 py-3 text-center font-bold text-off-black dark:text-white">{row.pkt}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-
-              <div className="px-6 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Stand: Spieltag 18 • Platzhalter-Daten
-                </p>
-              </div>
-            </div>
+            <LeagueTable leagueId={tableLeagueId} />
 
             {/* Video Highlights for this league */}
             {leagueVideos.length > 0 && (
@@ -232,7 +168,10 @@ export default async function LigaPage({ params }: PageProps) {
 
           {/* Sidebar */}
           <div className="space-y-6">
-            {/* League Results with Matchday Navigation */}
+            {/* Real matches from Supabase */}
+            <LeagueMatches leagueId={tableLeagueId} />
+
+            {/* Mock league results (Tippspiel) */}
             <LeagueResults leagueId={league.id} />
 
             {/* News Placeholder */}

@@ -12,7 +12,7 @@ import { getClubs } from "@/lib/api/clubs";
 import { BEZIRKE } from "@/lib/jobs";
 import { ALL_LEAGUES, getLeaguesByCategory } from "@/lib/leagues";
 import { useTheme } from "@/hooks/useTheme";
-import { artikel } from "@/lib/data";
+import { useArticles } from "@/hooks/useArticles";
 import { ALL_MATCHES } from "@/lib/mock/matches";
 import type { Verein } from "@/lib/types";
 
@@ -45,6 +45,7 @@ export default function ProfilPage() {
   const router = useRouter();
   const { user, profile, loading, refreshProfile, signOut } = useUser();
   const { theme, toggleTheme, mounted } = useTheme();
+  const { articles: artikel } = useArticles();
 
   // Editing states
   const [editingName, setEditingName] = useState(false);

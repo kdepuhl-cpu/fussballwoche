@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { artikel } from "@/lib/data";
 import { Artikel } from "@/lib/types";
+import { useArticles } from "@/hooks/useArticles";
 
 interface SearchOverlayProps {
   isOpen: boolean;
@@ -15,6 +15,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState<Artikel[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { articles: artikel } = useArticles();
 
   // Focus input when opened
   useEffect(() => {
@@ -38,7 +39,7 @@ export default function SearchOverlay({ isOpen, onClose }: SearchOverlayProps) {
         a.tags?.some((tag) => tag.toLowerCase().includes(searchTerm))
     );
     setResults(filtered.slice(0, 8));
-  }, [query]);
+  }, [query, artikel]);
 
   // Handle escape key
   useEffect(() => {

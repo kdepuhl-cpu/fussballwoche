@@ -10,7 +10,7 @@ import TagInput from "@/components/admin/TagInput";
 import { getArticleById, updateArticle, type ArticleInput } from "@/lib/api/admin";
 import type { ArticleRow } from "@/lib/api/types";
 
-const CATEGORIES = ["spielbericht", "analyse", "transfer", "news", "interview"];
+const CATEGORIES = ["spielbericht", "analyse", "transfer", "news", "interview", "kultur"];
 
 export default function EditArticlePage() {
   return (
@@ -51,6 +51,7 @@ function EditForm() {
   const [authorName, setAuthorName] = useState("");
   const [authorImage, setAuthorImage] = useState("");
   const [isFeatured, setIsFeatured] = useState(false);
+  const [isPremium, setIsPremium] = useState(false);
   const [readingTime, setReadingTime] = useState<number>(5);
   const [leagueId, setLeagueId] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -76,6 +77,7 @@ function EditForm() {
         setAuthorName(article.author_name ?? "");
         setAuthorImage(article.author_image ?? "");
         setIsFeatured(article.is_featured);
+        setIsPremium(article.is_premium ?? false);
         setReadingTime(article.reading_time_minutes ?? 5);
         setLeagueId(article.league_id ?? "");
         setTags(article.tags ?? []);
@@ -108,6 +110,7 @@ function EditForm() {
         author_name: authorName || null,
         author_image: authorImage || null,
         is_featured: isFeatured,
+        is_premium: isPremium,
         reading_time_minutes: readingTime || null,
         league_id: leagueId || null,
         tags,
@@ -171,11 +174,19 @@ function EditForm() {
           </div>
         </div>
 
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)}
-            className="rounded border-gray-300 text-forest-green focus:ring-forest-green" />
-          <span className="text-sm text-gray-700">Featured Artikel</span>
-        </label>
+        <div className="flex items-center gap-6">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={isFeatured} onChange={(e) => setIsFeatured(e.target.checked)}
+              className="rounded border-gray-300 text-forest-green focus:ring-forest-green" />
+            <span className="text-sm text-gray-700">Featured Artikel</span>
+          </label>
+
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" checked={isPremium} onChange={(e) => setIsPremium(e.target.checked)}
+              className="rounded border-gray-300 text-electric-orange focus:ring-electric-orange" />
+            <span className="text-sm text-gray-700">Premium (Paywall)</span>
+          </label>
+        </div>
 
         {publishedAt && (
           <p className="text-xs text-gray-400">

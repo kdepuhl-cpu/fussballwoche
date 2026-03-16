@@ -23,6 +23,7 @@ export interface ArticleRow {
   author_image: string | null;
   published_at: string;
   is_featured: boolean;
+  is_premium: boolean;
   reading_time_minutes: number | null;
   league_id: string | null;
   club_ids: string[];
@@ -102,6 +103,7 @@ export function articleRowToArtikel(row: ArticleRow): Artikel {
     autor,
     lesedauer: row.reading_time_minutes ?? undefined,
     featured: row.is_featured || undefined,
+    premium: row.is_premium || undefined,
     tags: row.tags.length > 0 ? row.tags : undefined,
   };
 }
