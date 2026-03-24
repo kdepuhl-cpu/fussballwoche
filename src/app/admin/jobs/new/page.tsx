@@ -72,7 +72,7 @@ function JobForm() {
 
   // Optionale Felder
   const [clubLogoUrl, setClubLogoUrl] = useState("");
-  const [district, setDistrict] = useState("");
+  const [district] = useState("");
   const [league, setLeague] = useState("");
   const [requirements, setRequirements] = useState("");
   const [tasks, setTasks] = useState("");

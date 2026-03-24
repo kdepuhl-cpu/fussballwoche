@@ -1,6 +1,5 @@
 import { supabase, isSupabaseConfigured } from "../supabase";
 import {
-  isOpenLigaLeague,
   getOpenLigaMapping,
   getOpenLigaTable,
   getOpenLigaMatches,

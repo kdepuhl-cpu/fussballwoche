@@ -52,7 +52,7 @@ export default function AdminDashboardPage() {
 }
 
 function DashboardContent() {
-  const { user } = useAdminAuth();
+  useAdminAuth();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [newsletterStats, setNewsletterStats] = useState<NewsletterStats | null>(null);
   const [topAuthors, setTopAuthors] = useState<TopAuthor[]>([]);
@@ -94,7 +94,7 @@ function DashboardContent() {
             const campaigns = data.campaigns ?? [];
             if (campaigns.length > 0) {
               const totals = campaigns.reduce(
-                (acc: { opens: number; clicks: number; sent: number }, c: any) => {
+                (acc: { opens: number; clicks: number; sent: number }, c: Record<string, Record<string, Record<string, number>>>) => {
                   const s = c.statistics?.globalStats;
                   if (s) {
                     acc.opens += s.uniqueOpens ?? 0;

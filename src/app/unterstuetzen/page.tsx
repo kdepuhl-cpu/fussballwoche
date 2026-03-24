@@ -7,6 +7,8 @@ import NewsletterSignup from "@/components/newsletter/NewsletterSignup";
 import Link from "next/link";
 import { getCrowdfundingStats, type CrowdfundingStats } from "@/lib/api/crowdfunding";
 
+const STARTNEXT_URL = "https://www.startnext.com/fussballwoche";
+
 interface RewardTier {
   name: string;
   price: string;
