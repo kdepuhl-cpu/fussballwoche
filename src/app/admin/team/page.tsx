@@ -4,13 +4,21 @@ import { useEffect, useState, useCallback } from "react";
 import AdminGuard from "@/components/admin/AdminGuard";
 import Sidebar from "@/components/admin/Sidebar";
 import { supabase } from "@/lib/supabase";
-import type { UserRole } from "@/lib/admin/auth";
+import { useAdminAuth, type UserRole } from "@/lib/admin/auth";
 
 interface TeamMember {
   id: string;
   display_name: string | null;
   role: UserRole;
+  created_at: string;
+}
+
+interface Invitation {
+  id: string;
   email: string;
+  role: string;
+  token: string;
+  used: boolean;
   created_at: string;
 }
 
@@ -37,7 +45,9 @@ export default function TeamPage() {
             <p className="text-sm text-gray-500 mb-6">
               Verwalte Rollen und Zugriffsrechte für dein Team.
             </p>
+            <InviteSection />
             <TeamList />
+            <PendingInvitations />
           </div>
         </main>
       </div>
@@ -45,6 +55,120 @@ export default function TeamPage() {
   );
 }
 
+// === Einladung verschicken ===
+function InviteSection() {
+  const { user } = useAdminAuth();
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"redakteur" | "admin">("redakteur");
+  const [inviteLink, setInviteLink] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [copied, setCopied] = useState(false);
+
+  async function handleInvite(e: React.FormEvent) {
+    e.preventDefault();
+    setError("");
+    setInviteLink("");
+    setLoading(true);
+
+    const { data, error: err } = await supabase
+      .from("invitations")
+      .insert({ email: email.trim().toLowerCase(), role, invited_by: user?.id })
+      .select("token")
+      .single();
+
+    if (err) {
+      setError(err.message.includes("duplicate") ? "Diese E-Mail wurde bereits eingeladen." : err.message);
+      setLoading(false);
+      return;
+    }
+
+    const baseUrl = window.location.origin;
+    setInviteLink(`${baseUrl}/admin/einladung?token=${data.token}`);
+    setLoading(false);
+  }
+
+  async function copyLink() {
+    await navigator.clipboard.writeText(inviteLink);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  }
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 mb-6">
+      <h2 className="text-lg font-semibold text-gray-900 mb-4">Mitglied einladen</h2>
+
+      {!inviteLink ? (
+        <form onSubmit={handleInvite} className="flex gap-3 items-end">
+          <div className="flex-1">
+            <label className="block text-sm font-medium text-gray-700 mb-1">E-Mail</label>
+            <input
+              type="email"
+              required
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="redakteur@example.com"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Rolle</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as "redakteur" | "admin")}
+              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
+            >
+              <option value="redakteur">Redakteur</option>
+              <option value="admin">Admin</option>
+            </select>
+          </div>
+          <button
+            type="submit"
+            disabled={loading}
+            className="px-4 py-2 bg-forest-green text-white text-sm font-medium rounded-lg hover:bg-forest-green/90 disabled:opacity-50 transition-colors"
+          >
+            {loading ? "..." : "Einladen"}
+          </button>
+        </form>
+      ) : (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+            <svg className="w-5 h-5 text-green-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p className="text-sm text-green-800">
+              Einladung erstellt! Schicke diesen Link an <strong>{email}</strong>:
+            </p>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              readOnly
+              value={inviteLink}
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-600"
+            />
+            <button
+              onClick={copyLink}
+              className="px-4 py-2 bg-forest-green text-white text-sm font-medium rounded-lg hover:bg-forest-green/90 transition-colors"
+            >
+              {copied ? "Kopiert!" : "Kopieren"}
+            </button>
+          </div>
+          <button
+            onClick={() => { setInviteLink(""); setEmail(""); }}
+            className="text-xs text-gray-500 hover:text-gray-700"
+          >
+            Weitere Person einladen
+          </button>
+        </div>
+      )}
+
+      {error && <p className="mt-2 text-sm text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+// === Team-Liste ===
 function TeamList() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
@@ -65,20 +189,11 @@ function TeamList() {
       return;
     }
 
-    // Fetch emails from auth (admin RPC not available, use display as fallback)
-    setMembers(
-      (data ?? []).map((p) => ({
-        ...p,
-        role: p.role as UserRole,
-        email: p.display_name ?? "—",
-      }))
-    );
+    setMembers((data ?? []).map((p) => ({ ...p, role: p.role as UserRole })));
     setLoading(false);
   }, []);
 
-  useEffect(() => {
-    loadMembers();
-  }, [loadMembers]);
+  useEffect(() => { loadMembers(); }, [loadMembers]);
 
   async function changeRole(userId: string, newRole: UserRole) {
     setSaving(userId);
@@ -86,43 +201,9 @@ function TeamList() {
       target_user_id: userId,
       new_role: newRole,
     });
-
-    if (err) {
-      setError(err.message);
-    } else {
-      await loadMembers();
-    }
+    if (err) setError(err.message);
+    else await loadMembers();
     setSaving(null);
-  }
-
-  // Add user by email
-  const [addEmail, setAddEmail] = useState("");
-  const [addRole, setAddRole] = useState<UserRole>("redakteur");
-  const [addError, setAddError] = useState("");
-  const [addLoading, setAddLoading] = useState(false);
-
-  async function handleAddUser(e: React.FormEvent) {
-    e.preventDefault();
-    setAddError("");
-    setAddLoading(true);
-
-    // Find user by display_name (email is stored there on signup)
-    const { data, error: err } = await supabase
-      .from("profiles")
-      .select("id, display_name")
-      .ilike("display_name", addEmail.trim())
-      .limit(1)
-      .single();
-
-    if (err || !data) {
-      setAddError("User nicht gefunden. Der User muss sich zuerst registrieren.");
-      setAddLoading(false);
-      return;
-    }
-
-    await changeRole(data.id, addRole);
-    setAddEmail("");
-    setAddLoading(false);
   }
 
   if (loading) {
@@ -134,78 +215,27 @@ function TeamList() {
   }
 
   return (
-    <div className="space-y-6">
-      {error && (
-        <div className="bg-red-50 text-red-600 rounded-lg p-4 text-sm">{error}</div>
-      )}
+    <div className="mb-6">
+      {error && <div className="bg-red-50 text-red-600 rounded-lg p-4 text-sm mb-4">{error}</div>}
 
-      {/* Add user form */}
-      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Mitglied hinzufügen</h2>
-        <form onSubmit={handleAddUser} className="flex gap-3 items-end">
-          <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              E-Mail / Name
-            </label>
-            <input
-              type="text"
-              required
-              value={addEmail}
-              onChange={(e) => setAddEmail(e.target.value)}
-              placeholder="name@example.com"
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Rolle</label>
-            <select
-              value={addRole}
-              onChange={(e) => setAddRole(e.target.value as UserRole)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-forest-green focus:border-transparent"
-            >
-              <option value="redakteur">Redakteur</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-          <button
-            type="submit"
-            disabled={addLoading}
-            className="px-4 py-2 bg-forest-green text-white text-sm font-medium rounded-lg hover:bg-forest-green/90 disabled:opacity-50 transition-colors"
-          >
-            {addLoading ? "..." : "Hinzufügen"}
-          </button>
-        </form>
-        {addError && (
-          <p className="mt-2 text-sm text-red-600">{addError}</p>
-        )}
-      </div>
-
-      {/* Team list */}
       <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="px-6 py-4 border-b border-gray-200">
+          <h2 className="text-lg font-semibold text-gray-900">Aktive Mitglieder</h2>
+        </div>
         <table className="w-full">
           <thead>
             <tr className="border-b border-gray-200 bg-gray-50">
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                Name
-              </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                Rolle
-              </th>
-              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                Dabei seit
-              </th>
-              <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">
-                Aktionen
-              </th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Name</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Rolle</th>
+              <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Dabei seit</th>
+              <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Aktionen</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
             {members.map((member) => (
               <tr key={member.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4">
-                  <span className="text-sm font-medium text-gray-900">
-                    {member.display_name ?? "—"}
-                  </span>
+                  <span className="text-sm font-medium text-gray-900">{member.display_name ?? "—"}</span>
                 </td>
                 <td className="px-6 py-4">
                   <span className={`inline-flex px-2 py-0.5 text-xs font-bold uppercase rounded ${ROLE_COLORS[member.role]}`}>
@@ -232,13 +262,81 @@ function TeamList() {
             {members.length === 0 && (
               <tr>
                 <td colSpan={4} className="px-6 py-8 text-center text-sm text-gray-500">
-                  Noch keine Teammitglieder. Füge oben jemanden hinzu.
+                  Noch keine Teammitglieder. Lade oben jemanden ein.
                 </td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
+    </div>
+  );
+}
+
+// === Offene Einladungen ===
+function PendingInvitations() {
+  const [invitations, setInvitations] = useState<Invitation[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    supabase
+      .from("invitations")
+      .select("*")
+      .eq("used", false)
+      .order("created_at", { ascending: false })
+      .then(({ data }) => {
+        setInvitations((data ?? []) as Invitation[]);
+        setLoading(false);
+      });
+  }, []);
+
+  async function deleteInvitation(id: string) {
+    await supabase.from("invitations").delete().eq("id", id);
+    setInvitations((prev) => prev.filter((i) => i.id !== id));
+  }
+
+  if (loading || invitations.length === 0) return null;
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <h2 className="text-lg font-semibold text-gray-900">Offene Einladungen</h2>
+      </div>
+      <table className="w-full">
+        <thead>
+          <tr className="border-b border-gray-200 bg-gray-50">
+            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">E-Mail</th>
+            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Rolle</th>
+            <th className="text-left px-6 py-3 text-xs font-medium text-gray-500 uppercase">Eingeladen am</th>
+            <th className="text-right px-6 py-3 text-xs font-medium text-gray-500 uppercase">Aktionen</th>
+          </tr>
+        </thead>
+        <tbody className="divide-y divide-gray-100">
+          {invitations.map((inv) => (
+            <tr key={inv.id} className="hover:bg-gray-50">
+              <td className="px-6 py-4 text-sm text-gray-900">{inv.email}</td>
+              <td className="px-6 py-4">
+                <span className={`inline-flex px-2 py-0.5 text-xs font-bold uppercase rounded ${
+                  inv.role === "admin" ? ROLE_COLORS.admin : ROLE_COLORS.redakteur
+                }`}>
+                  {inv.role === "admin" ? "Admin" : "Redakteur"}
+                </span>
+              </td>
+              <td className="px-6 py-4 text-sm text-gray-500">
+                {new Date(inv.created_at).toLocaleDateString("de-DE")}
+              </td>
+              <td className="px-6 py-4 text-right">
+                <button
+                  onClick={() => deleteInvitation(inv.id)}
+                  className="text-xs text-red-500 hover:text-red-700"
+                >
+                  Zurückziehen
+                </button>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }
