@@ -32,7 +32,15 @@ async function fetchRole(userId: string): Promise<UserRole> {
     .eq("id", userId)
     .single();
 
-  if (error || !data?.role) return "user";
+  if (error) {
+    console.error("[fetchRole] error:", error.message, "code:", error.code, "userId:", userId);
+    return "user";
+  }
+  if (!data?.role) {
+    console.error("[fetchRole] no role in data:", data, "userId:", userId);
+    return "user";
+  }
+  console.log("[fetchRole] role:", data.role, "userId:", userId);
   return data.role as UserRole;
 }
 
@@ -78,8 +86,16 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       const userRole = await fetchRole(data.user.id);
 
       if (userRole === "user") {
+        // Debug: direct check to find the issue
+        const debugCheck = await supabase
+          .from("profiles")
+          .select("role")
+          .eq("id", data.user.id)
+          .single();
         await supabase.auth.signOut();
-        return { error: "Kein Zugang zum Admin-Bereich für dieses Konto." };
+        return {
+          error: `Kein Zugang. Debug: uid=${data.user.id.slice(0,8)}, role=${debugCheck.data?.role ?? "null"}, err=${debugCheck.error?.message ?? "none"}`,
+        };
       }
 
       setRole(userRole);
