@@ -17,6 +17,11 @@
 [context.deploy-preview.environment]
   NEXT_PUBLIC_ENV = "preview"
 
+# Pretty URLs (serve .html files without extension)
+[build.processing]
+  [build.processing.html]
+    pretty_urls = true
+
 # Security Headers
 [[headers]]
   for = "/*"
