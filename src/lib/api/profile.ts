@@ -9,6 +9,7 @@ export interface UserProfile {
   bezirk: string | null;
   points: number;
   level: string;
+  role: "user" | "redakteur" | "admin";
   onboarding_completed: boolean;
   reader_points: number;
   articles_read: string[];

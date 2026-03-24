@@ -5,7 +5,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAdminAuth } from "@/lib/admin/auth";
 
-const NAV_ITEMS = [
+interface NavItem {
+  label: string;
+  href: string;
+  icon: string;
+  adminOnly?: boolean;
+}
+
+const NAV_ITEMS: NavItem[] = [
   {
     label: "Dashboard",
     href: "/admin",
@@ -26,16 +33,27 @@ const NAV_ITEMS = [
     href: "/admin/clubs",
     icon: "M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9",
   },
+  // {
+  //   label: "Tippspiel",
+  //   href: "/admin/votes",
+  //   icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+  // },
   {
-    label: "Tippspiel",
-    href: "/admin/votes",
-    icon: "M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z",
+    label: "Daten",
+    href: "/admin/daten",
+    icon: "M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4",
+  },
+  {
+    label: "Team",
+    href: "/admin/team",
+    icon: "M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z",
+    adminOnly: true,
   },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { signOut, user } = useAdminAuth();
+  const { signOut, user, isAdmin, role } = useAdminAuth();
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (href: string) => {
@@ -52,7 +70,7 @@ export default function Sidebar() {
       </div>
 
       <nav className="flex-1 p-4 space-y-1">
-        {NAV_ITEMS.map((item) => (
+        {NAV_ITEMS.filter((item) => !item.adminOnly || isAdmin).map((item) => (
           <Link
             key={item.href}
             href={item.href}
@@ -72,6 +90,13 @@ export default function Sidebar() {
       </nav>
 
       <div className="p-4 border-t border-gray-700">
+        <div className="flex items-center gap-2 mb-2">
+          <span className={`px-1.5 py-0.5 text-[10px] font-bold uppercase rounded ${
+            role === "admin" ? "bg-electric-orange/20 text-electric-orange" : "bg-forest-green/20 text-forest-green"
+          }`}>
+            {role === "admin" ? "Admin" : "Redakteur"}
+          </span>
+        </div>
         <p className="text-xs text-gray-400 truncate mb-2">{user?.email}</p>
         <button
           onClick={() => signOut()}

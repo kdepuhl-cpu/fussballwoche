@@ -8,7 +8,6 @@ interface SocialFeedProps {
   clubName: string;
 }
 
-// Instagram SVG icon
 function InstagramIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -17,7 +16,6 @@ function InstagramIcon({ className = "w-6 h-6" }: { className?: string }) {
   );
 }
 
-// Facebook SVG icon
 function FacebookIcon({ className = "w-6 h-6" }: { className?: string }) {
   return (
     <svg className={className} fill="currentColor" viewBox="0 0 24 24">
@@ -32,16 +30,21 @@ export default function SocialFeed({ instagramUrl, facebookUrl, clubName }: Soci
   const defaultTab: TabId = instagramUrl ? "instagram" : "facebook";
   const [activeTab, setActiveTab] = useState<TabId>(defaultTab);
 
-  // Don't render if neither URL is provided
   if (!instagramUrl && !facebookUrl) return null;
 
   const availableTabs: { id: TabId; label: string }[] = [];
   if (instagramUrl) availableTabs.push({ id: "instagram", label: "Instagram" });
   if (facebookUrl) availableTabs.push({ id: "facebook", label: "Facebook" });
 
+  // Extract Facebook page name from URL for the Page Plugin
+  const fbPageUrl = facebookUrl || "";
+
+  // Build Instagram profile URL from handle
+  const instaHandle = instagramUrl?.replace(/^@/, "").replace(/^https?:\/\/(www\.)?instagram\.com\//, "").replace(/\/$/, "") || "";
+  const instaProfileUrl = instaHandle ? `https://www.instagram.com/${instaHandle}/` : "";
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-6">
-      {/* Section Header */}
       <h2 className="font-headline text-xl text-off-black dark:text-white mb-1">
         Newsroom
       </h2>
@@ -62,95 +65,56 @@ export default function SocialFeed({ instagramUrl, facebookUrl, clubName }: Soci
                   : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
               }`}
             >
-              {tab.id === "instagram" ? (
-                <InstagramIcon className="w-4 h-4" />
-              ) : (
-                <FacebookIcon className="w-4 h-4" />
-              )}
+              {tab.id === "instagram" ? <InstagramIcon className="w-4 h-4" /> : <FacebookIcon className="w-4 h-4" />}
               {tab.label}
             </button>
           ))}
         </div>
       )}
 
-      {/* Instagram Tab Content */}
-      {/*
-        TODO: Replace placeholders with real Instagram embeds.
-        Options:
-        1. Instagram Basic Display API (requires app review)
-        2. Instagram oEmbed API (requires Facebook Developer App)
-        3. Third-party services like EmbedSocial, Elfsight, or Curator.io
-        For now, placeholder cards are shown.
-      */}
-      {activeTab === "instagram" && instagramUrl && (
+      {/* Instagram */}
+      {activeTab === "instagram" && instaProfileUrl && (
         <div>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {Array.from({ length: 6 }).map((_, i) => (
-              <div
-                key={i}
-                className="aspect-square rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 flex flex-col items-center justify-center gap-2 text-gray-400 dark:text-gray-500"
-              >
-                <InstagramIcon className="w-8 h-8 opacity-40" />
-                <span className="text-xs">Beitrag laden...</span>
-              </div>
-            ))}
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden bg-gray-50 dark:bg-gray-900 p-6 text-center">
+            <InstagramIcon className="w-12 h-12 mx-auto mb-3 text-pink-500" />
+            <p className="font-semibold text-gray-900 dark:text-white mb-1">@{instaHandle}</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              Folge {clubName} auf Instagram für aktuelle Beiträge, Stories und mehr.
+            </p>
+            <a
+              href={instaProfileUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-gradient-to-r from-purple-500 via-pink-500 to-orange-400 text-white text-sm font-semibold hover:opacity-90 transition-opacity"
+            >
+              <InstagramIcon className="w-4 h-4" />
+              Auf Instagram ansehen
+            </a>
           </div>
-
-          <a
-            href={instagramUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-5 flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-forest-green/10 dark:bg-green-900/20 text-forest-green dark:text-neon-green text-sm font-semibold hover:bg-forest-green/20 dark:hover:bg-green-900/30 transition-colors"
-          >
-            <InstagramIcon className="w-4 h-4" />
-            Folge {clubName} auf Instagram
-            <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-            </svg>
-          </a>
         </div>
       )}
 
-      {/* Facebook Tab Content */}
-      {/*
-        TODO: Replace placeholders with real Facebook embeds.
-        Options:
-        1. Facebook Page Plugin (iframe embed)
-        2. Facebook Graph API for page posts
-        3. Third-party aggregation services
-        For now, placeholder cards are shown.
-      */}
-      {activeTab === "facebook" && facebookUrl && (
+      {/* Facebook — Page Plugin */}
+      {activeTab === "facebook" && fbPageUrl && (
         <div>
-          <div className="space-y-3">
-            {Array.from({ length: 3 }).map((_, i) => (
-              <div
-                key={i}
-                className="rounded-lg bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 p-4 flex items-start gap-4"
-              >
-                <div className="w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center flex-shrink-0">
-                  <FacebookIcon className="w-5 h-5 text-gray-400 dark:text-gray-500 opacity-60" />
-                </div>
-                <div className="flex-1 space-y-2">
-                  <div className="h-3 w-24 bg-gray-200 dark:bg-gray-700 rounded" />
-                  <div className="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded" />
-                  <div className="h-2 w-3/4 bg-gray-200 dark:bg-gray-700 rounded" />
-                  <p className="text-xs text-gray-400 dark:text-gray-500 pt-1">
-                    Beitrag laden...
-                  </p>
-                </div>
-              </div>
-            ))}
+          <div className="rounded-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <iframe
+              src={`https://www.facebook.com/plugins/page.php?href=${encodeURIComponent(fbPageUrl)}&tabs=timeline&width=500&height=500&small_header=true&adapt_container_width=true&hide_cover=false&show_facepile=false`}
+              width="100%"
+              height={500}
+              style={{ border: "none", overflow: "hidden" }}
+              allow="autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+              title={`${clubName} auf Facebook`}
+            />
           </div>
-
           <a
-            href={facebookUrl}
+            href={fbPageUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-5 flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-forest-green/10 dark:bg-green-900/20 text-forest-green dark:text-neon-green text-sm font-semibold hover:bg-forest-green/20 dark:hover:bg-green-900/30 transition-colors"
+            className="mt-4 flex items-center justify-center gap-2 w-full py-3 rounded-lg bg-forest-green/10 dark:bg-green-900/20 text-forest-green dark:text-green-400 text-sm font-semibold hover:bg-forest-green/20 dark:hover:bg-green-900/30 transition-colors"
           >
             <FacebookIcon className="w-4 h-4" />
-            Folge {clubName} auf Facebook
+            {clubName} auf Facebook folgen
             <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
             </svg>

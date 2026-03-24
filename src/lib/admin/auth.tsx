@@ -11,9 +11,13 @@ import {
 import { supabase } from "../supabase";
 import type { User } from "@supabase/supabase-js";
 
+export type UserRole = "user" | "redakteur" | "admin";
+
 interface AdminAuthState {
   user: User | null;
+  role: UserRole;
   isAdmin: boolean;
+  isRedakteur: boolean;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
   signOut: () => Promise<void>;
@@ -21,34 +25,46 @@ interface AdminAuthState {
 
 const AdminAuthContext = createContext<AdminAuthState | null>(null);
 
-const ADMIN_EMAILS = (process.env.NEXT_PUBLIC_ADMIN_EMAILS ?? "")
-  .split(",")
-  .map((e) => e.trim().toLowerCase())
-  .filter(Boolean);
+async function fetchRole(userId: string): Promise<UserRole> {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", userId)
+    .single();
 
-function checkIsAdmin(user: User | null): boolean {
-  if (!user?.email) return false;
-  return ADMIN_EMAILS.includes(user.email.toLowerCase());
+  if (error || !data?.role) return "user";
+  return data.role as UserRole;
 }
 
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<UserRole>("user");
   const [loading, setLoading] = useState(true);
+
+  const loadUser = useCallback(async (authUser: User | null) => {
+    setUser(authUser);
+    if (authUser) {
+      const r = await fetchRole(authUser.id);
+      setRole(r);
+    } else {
+      setRole("user");
+    }
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      setLoading(false);
+      loadUser(session?.user ?? null);
     });
 
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
+      loadUser(session?.user ?? null);
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [loadUser]);
 
   const signIn = useCallback(
     async (email: string, password: string): Promise<{ error?: string }> => {
@@ -59,11 +75,14 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
       if (error) return { error: error.message };
 
-      if (!checkIsAdmin(data.user)) {
+      const userRole = await fetchRole(data.user.id);
+
+      if (userRole === "user") {
         await supabase.auth.signOut();
-        return { error: "Kein Admin-Zugang für dieses Konto." };
+        return { error: "Kein Zugang zum Admin-Bereich fuer dieses Konto." };
       }
 
+      setRole(userRole);
       return {};
     },
     []
@@ -71,12 +90,17 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
+    setUser(null);
+    setRole("user");
   }, []);
 
-  const isAdmin = checkIsAdmin(user);
+  const isAdmin = role === "admin";
+  const isRedakteur = role === "admin" || role === "redakteur";
 
   return (
-    <AdminAuthContext.Provider value={{ user, isAdmin, loading, signIn, signOut }}>
+    <AdminAuthContext.Provider
+      value={{ user, role, isAdmin, isRedakteur, loading, signIn, signOut }}
+    >
       {children}
     </AdminAuthContext.Provider>
   );

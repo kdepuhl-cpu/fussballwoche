@@ -17,9 +17,14 @@ import Kolumne from "@/components/formate/Kolumne";
 import InterviewDerWoche from "@/components/formate/InterviewDerWoche";
 import CrowdfundingBanner from "@/components/crowdfunding/CrowdfundingBanner";
 import { useArticles } from "@/hooks/useArticles";
+import { useUser } from "@/lib/user/auth";
+import type { Artikel } from "@/lib/types";
+
+type LeagueSection = { id: string; title: string; articles: Artikel[] };
 
 export default function Home() {
   const { articles: artikel } = useArticles();
+  const { profile } = useUser();
 
   // === Artikel nach Liga filtern ===
   const regionalArtikel = artikel.filter((a) => a.ligaId === "regionalliga-nordost");
@@ -40,6 +45,60 @@ export default function Home() {
     zweiteLigaArtikel[0],
   ].filter(Boolean);
 
+  // === Personalisierte Liga-Reihenfolge ===
+  const allLeagueSections: LeagueSection[] = [
+    { id: "regionalliga-nordost", title: "Regionalliga Nordost", articles: regionalArtikel },
+    { id: "oberliga-nofv-nord", title: "Oberliga NOFV Nord", articles: oberligaArtikel },
+    { id: "berlin-liga", title: "Berlin-Liga", articles: berlinLigaArtikel },
+    { id: "bundesliga-1", title: "Bundesliga", articles: bundesligaArtikel },
+    { id: "bundesliga-2", title: "2. Bundesliga", articles: zweiteLigaArtikel },
+    { id: "liga-3", title: "3. Liga", articles: dritteLigaArtikel },
+  ];
+
+  const favIds = profile?.favorite_league_ids ?? [];
+  const orderedSections = favIds.length > 0
+    ? [
+        ...allLeagueSections.filter(s => favIds.includes(s.id)),
+        ...allLeagueSections.filter(s => !favIds.includes(s.id)),
+      ]
+    : allLeagueSections;
+
+  const activeSections = orderedSections.filter(s => s.articles.length > 0);
+
+  // Chunks fuer Interstitial-Content zwischen den Liga-Sektionen
+  const chunk1 = activeSections.slice(0, 2);
+  const chunk2 = activeSections.slice(2, 3);
+  const chunk3 = activeSections.slice(3, 5);
+  const chunk4 = activeSections.slice(5);
+
+  const renderSection = (section: LeagueSection) => {
+    if (section.id === "bundesliga-1") {
+      return (
+        <div key={section.id} className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 border-b border-gray-200 dark:border-gray-700 pb-10 mb-10">
+          <div>
+            <HeroSection
+              sectionTitle={section.title}
+              hero={section.articles[0]}
+              sidebar={section.articles.slice(1, 5)}
+              isLast={true}
+            />
+          </div>
+          <div className="lg:border-l lg:border-gray-200 dark:lg:border-gray-700 lg:pl-8">
+            <MostPopular articles={mostPopularArtikel} />
+          </div>
+        </div>
+      );
+    }
+    return (
+      <HeroSection
+        key={section.id}
+        sectionTitle={section.title}
+        hero={section.articles[0]}
+        sidebar={section.articles.slice(1, 5)}
+      />
+    );
+  };
+
   return (
     <div className="min-h-screen bg-off-white dark:bg-gray-900">
       <div className="sticky top-0 z-50">
@@ -56,30 +115,15 @@ export default function Home() {
         {/* Personalisierte Sektion (eingeloggte User mit Favoritenverein) */}
         <FavoritesSection artikel={artikel} />
 
-        {/* 2. Regionalliga Nordost — das Herz der FuWo */}
-        {regionalArtikel.length > 0 && (
-          <HeroSection
-            sectionTitle="Regionalliga Nordost"
-            hero={regionalArtikel[0]}
-            sidebar={regionalArtikel.slice(1, 5)}
-          />
-        )}
-
-        {/* 3. Oberliga NOFV Nord */}
-        {oberligaArtikel.length > 0 && (
-          <HeroSection
-            sectionTitle="Oberliga NOFV Nord"
-            hero={oberligaArtikel[0]}
-            sidebar={oberligaArtikel.slice(1, 5)}
-          />
-        )}
+        {/* === Liga-Sektionen (personalisierte Reihenfolge) === */}
+        {chunk1.map(renderSection)}
 
         {/* Partner Slider */}
         <div className="my-8">
           <PartnerSlider />
         </div>
 
-        {/* 4. Frauen — weit oben priorisiert */}
+        {/* Frauen — Placeholder */}
         <section className="mb-10 border-b border-gray-200 dark:border-gray-700 pb-10">
           <div className="flex items-center gap-3 mb-6">
             <h2 className="font-headline text-3xl text-off-black dark:text-white">Frauen</h2>
@@ -97,45 +141,14 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 5. Berlin-Liga */}
-        {berlinLigaArtikel.length > 0 && (
-          <HeroSection
-            sectionTitle="Berlin-Liga"
-            hero={berlinLigaArtikel[0]}
-            sidebar={berlinLigaArtikel.slice(1, 5)}
-          />
-        )}
+        {chunk2.map(renderSection)}
 
         {/* Ad: Leaderboard */}
         <div className="my-8">
           <AdSlot variant="leaderboard" />
         </div>
 
-        {/* 7. Bundesliga + Meistgelesen */}
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 border-b border-gray-200 dark:border-gray-700 pb-10 mb-10">
-          <div>
-            {bundesligaArtikel.length > 0 && (
-              <HeroSection
-                sectionTitle="Bundesliga"
-                hero={bundesligaArtikel[0]}
-                sidebar={bundesligaArtikel.slice(1, 5)}
-                isLast={true}
-              />
-            )}
-          </div>
-          <div className="lg:border-l lg:border-gray-200 dark:lg:border-gray-700 lg:pl-8">
-            <MostPopular articles={mostPopularArtikel} />
-          </div>
-        </div>
-
-        {/* 8. 2. Bundesliga */}
-        {zweiteLigaArtikel.length > 0 && (
-          <HeroSection
-            sectionTitle="2. Bundesliga"
-            hero={zweiteLigaArtikel[0]}
-            sidebar={zweiteLigaArtikel.slice(1, 5)}
-          />
-        )}
+        {chunk3.map(renderSection)}
 
         {/* Kommentar / Kolumne */}
         <Kolumne />
@@ -151,16 +164,9 @@ export default function Home() {
           <AdSlot variant="mid-article" />
         </div>
 
-        {/* 9. 3. Liga */}
-        {dritteLigaArtikel.length > 0 && (
-          <HeroSection
-            sectionTitle="3. Liga"
-            hero={dritteLigaArtikel[0]}
-            sidebar={dritteLigaArtikel.slice(1, 5)}
-          />
-        )}
+        {chunk4.map(renderSection)}
 
-        {/* 10. Landesliga — Placeholder */}
+        {/* Landesliga — Placeholder */}
         <section className="mb-10 border-b border-gray-200 dark:border-gray-700 pb-10">
           <div className="flex items-center justify-between mb-6">
             <h2 className="font-headline text-3xl text-off-black dark:text-white">Landesliga</h2>
@@ -173,7 +179,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* 11. Brandenburgliga — NEU */}
+        {/* Brandenburgliga — Placeholder */}
         <section className="mb-10 border-b border-gray-200 dark:border-gray-700 pb-10">
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">

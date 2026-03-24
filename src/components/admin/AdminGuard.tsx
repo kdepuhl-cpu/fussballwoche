@@ -4,15 +4,22 @@ import { useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { useAdminAuth } from "@/lib/admin/auth";
 
-export default function AdminGuard({ children }: { children: ReactNode }) {
-  const { user, isAdmin, loading } = useAdminAuth();
+interface AdminGuardProps {
+  children: ReactNode;
+  requireAdmin?: boolean; // true = nur Admins, false = auch Redakteure
+}
+
+export default function AdminGuard({ children, requireAdmin = false }: AdminGuardProps) {
+  const { user, isAdmin, isRedakteur, loading } = useAdminAuth();
   const router = useRouter();
 
+  const hasAccess = requireAdmin ? isAdmin : isRedakteur;
+
   useEffect(() => {
-    if (!loading && (!user || !isAdmin)) {
+    if (!loading && (!user || !hasAccess)) {
       router.replace("/admin/login");
     }
-  }, [user, isAdmin, loading, router]);
+  }, [user, hasAccess, loading, router]);
 
   if (loading) {
     return (
@@ -22,7 +29,7 @@ export default function AdminGuard({ children }: { children: ReactNode }) {
     );
   }
 
-  if (!user || !isAdmin) return null;
+  if (!user || !hasAccess) return null;
 
   return <>{children}</>;
 }

@@ -139,6 +139,11 @@ export async function getAllJobsAdmin() {
 // Clubs CRUD
 // ============================================
 
+export interface ClubProfile {
+  kontakt?: { email?: string; telefon?: string; website?: string };
+  socialMedia?: { instagram?: string; facebook?: string };
+}
+
 export interface ClubRow {
   id: string;
   name: string;
@@ -150,6 +155,8 @@ export interface ClubRow {
   founded_year: number | null;
   primary_color: string | null;
   secondary_color: string | null;
+  description: string | null;
+  profile: ClubProfile;
   created_at: string;
   updated_at: string;
 }

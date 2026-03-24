@@ -33,7 +33,7 @@ export default function RootLayout({
         />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#144B23" />
-        <link rel="apple-touch-icon" href="/icons/fuwo.svg" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
       </head>
       <body className="antialiased pb-14">
         <Providers>
