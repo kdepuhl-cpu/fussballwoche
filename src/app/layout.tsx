@@ -3,7 +3,6 @@ import Script from "next/script";
 import "./globals.css";
 import ScrollToTop from "@/components/ui/ScrollToTop";
 import PWAInstallPrompt from "@/components/ui/PWAInstallPrompt";
-import CrowdfundingCTA from "@/components/crowdfunding/CrowdfundingCTA";
 import Providers from "@/components/Providers";
 
 export const metadata: Metadata = {
@@ -35,10 +34,9 @@ export default function RootLayout({
         <meta name="theme-color" content="#144B23" />
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png" />
       </head>
-      <body className="antialiased pb-14">
+      <body className="antialiased">
         <Providers>
           {children}
-          <CrowdfundingCTA />
           <ScrollToTop />
           <PWAInstallPrompt />
         </Providers>
