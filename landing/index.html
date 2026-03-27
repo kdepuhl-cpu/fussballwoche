@@ -64,13 +64,12 @@
 
     /* ===== HERO ===== */
     .hero {
-      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 2rem;
+      padding: 4rem 2rem 2rem;
       position: relative;
       overflow: hidden;
     }
@@ -97,7 +96,7 @@
     }
 
     .logo-container {
-      margin-bottom: 3.5rem;
+      margin-bottom: 2rem;
       opacity: 0;
       transform: translateY(20px);
       animation: fade-up 1s ease-out 0.3s forwards;
@@ -617,33 +616,18 @@
 
       <p class="hero-subtitle">Die FuWo ist bald zur&uuml;ck.</p>
 
-      <div class="scroll-hint">
-        <a href="#signup" onclick="event.preventDefault(); document.getElementById('signup').scrollIntoView({behavior:'smooth'});">
-          Sei dabei
-          <div class="scroll-arrow"></div>
-        </a>
-      </div>
+      <p class="hero-subtitle" style="margin-bottom: 1rem; margin-top: 0; opacity: 0; animation: fade-up 1s ease-out 0.95s forwards; font-size: clamp(0.85rem, 1.5vw, 0.95rem);">Sei direkt informiert, sobald die n&auml;chsten Schritte weitergehen.</p>
+      <form class="signup-form" id="signupForm" style="margin-top: 0; opacity: 0; animation: fade-up 1s ease-out 1s forwards;">
+        <input type="email" placeholder="deine@email.de" required id="emailInput" autocomplete="email" />
+        <button type="submit" class="btn-primary" id="submitBtn">Eintragen</button>
+      </form>
+      <div class="form-error" id="formError"></div>
+      <div class="form-success" id="formSuccess" style="max-width: 500px;">Du stehst im Kader! Wir melden uns zum Anpfiff.</div>
     </div>
   </section>
 
-  <!-- SIGNUP -->
-  <div class="divider"><hr /></div>
-  <section id="signup" class="reveal">
-    <div class="section-label">Kaderliste</div>
-    <h2>Stell dich in die Startelf</h2>
-    <p class="desc">Trag dich ein und wir sagen dir Bescheid, sobald die neue FUWO live geht.</p>
-
-    <form class="signup-form" id="signupForm">
-      <input type="email" placeholder="deine@email.de" required id="emailInput" autocomplete="email" />
-      <button type="submit" class="btn-primary" id="submitBtn">Eintragen</button>
-    </form>
-    <div class="form-error" id="formError"></div>
-    <div class="form-success" id="formSuccess">Du stehst im Kader! Wir melden uns zum Anpfiff.</div>
-  </section>
-
   <!-- FEATURES -->
-  <div class="divider"><hr /></div>
-  <section id="features" class="reveal">
+  <section id="features" style="padding-top: 2rem;">
     <div class="section-label">Taktiktafel</div>
     <h2>Welche Aufstellung w&uuml;nschst du dir?</h2>
     <p class="desc">Sag uns, welche Features in die Startelf m&uuml;ssen &mdash; dein Voting flie&szlig;t direkt in unsere Aufstellung ein.</p>
@@ -733,21 +717,8 @@
 
     // Dynamic Progress Bar: 72% on March 9 → 95% by April 15
     (function() {
-      const startDate = new Date('2026-03-09');
-      const endDate = new Date('2026-04-15');
-      const startPct = 72;
-      const endPct = 95;
-      const now = new Date();
-      const totalDays = (endDate - startDate) / (1000 * 60 * 60 * 24);
-      const daysPassed = Math.max(0, (now - startDate) / (1000 * 60 * 60 * 24));
-      const progress = Math.min(endPct, Math.round(startPct + (daysPassed / totalDays) * (endPct - startPct)));
-
-      // Football phrases based on progress
-      let label = 'Wir w\u00e4rmen uns auf\u2026';
-      if (progress >= 95) label = 'Tooor! Fast geschafft!';
-      else if (progress >= 90) label = 'Nachspielzeit\u2026';
-      else if (progress >= 85) label = 'Anpfiff in K\u00fcrze\u2026';
-      else if (progress >= 80) label = 'Aufstellung steht!';
+      const progress = 73;
+      const label = 'Im Trainingslager\u2026';
 
       document.getElementById('progressLabel').textContent = label;
       document.getElementById('progressPercent').textContent = progress + '%';
