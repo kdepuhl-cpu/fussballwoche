@@ -10,7 +10,7 @@ interface UserContextValue {
   profile: UserProfile | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
-  signUp: (email: string, password: string, displayName: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string, displayName: string) => Promise<{ error: string | null; confirmEmail: boolean }>;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
 }
@@ -20,7 +20,7 @@ const UserContext = createContext<UserContextValue>({
   profile: null,
   loading: true,
   signIn: async () => ({ error: null }),
-  signUp: async () => ({ error: null }),
+  signUp: async () => ({ error: null, confirmEmail: false }),
   signOut: async () => {},
   refreshProfile: async () => {},
 });
@@ -73,12 +73,15 @@ export function UserAuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const signUp = useCallback(async (email: string, password: string, displayName: string) => {
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { data: { display_name: displayName } },
     });
-    return { error: error?.message ?? null };
+    if (error) return { error: error.message, confirmEmail: false };
+    // If session is null, email confirmation is required
+    const confirmEmail = !data.session;
+    return { error: null, confirmEmail };
   }, []);
 
   const signOut = useCallback(async () => {
